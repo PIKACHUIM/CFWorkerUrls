@@ -1,0 +1,14 @@
+name = "cfworkerurls"
+main = "src/index.ts"
+compatibility_date = "2025-01-19"
+compatibility_flags = [ "nodejs_compat" ]
+account_id = "**************************"
+workers_dev = true
+assets = { directory = "./public" }
+
+[vars]
+FULL_URL= "*********"
+
+[[kv_namespaces]]
+binding = "DATABASE"
+id = "*****************************"
