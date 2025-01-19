@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>皮卡短链服务</title>
+    <link href="/static/style.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+    <div class="form-container">
+        <h1>网站短链服务</h1>
+        <div class="form-group" id="suffix_view">
+            <label for="suffix_full">生成链接：</label>
+            <input type="text" id="suffix_full" name="suffix_full" required>
+        </div>
+        <div class="form-group" id="tokens_view">
+            <label for="tokens_text">更新密码：</label>
+            <input type="text" id="tokens_text" name="tokens_text" required>
+        </div>
+
+        <div class="form-group">
+            <label for="record_urls">目标链接：</label>
+            <input type="text" id="record_urls" name="record_urls" required>
+        </div>
+        <!--        <div class="form-group">-->
+        <!--            <label for="node">节点选择：</label>-->
+        <!--            <select id="node" name="redirect">-->
+        <!--                <option value="1">1web.us.kg</option>-->
+        <!--            </select>-->
+        <!--        </div>-->
+        <div class="form-group">
+            <label for="typing_text">跳转方式：</label>
+            <select id="typing_text" name="typing_text">
+                <option value="direct">重定向 (推荐此方式)</option>
+                <option value="iframe">页嵌套 (兼容性不好)</option>
+                <option value="proxys">云代理 (访问速度慢)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="expire_days">过期时间：</label>
+            <div class="form-group hint">
+                超时无人访问且未更新链接自动删除
+            </div>
+            <select id="expire_days" name="expire_days">
+                <option value="1">1天</option>
+                <option value="7" selected>7天</option>
+                <option value="15">15天</option>
+                <option value="30">30天</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="submit" onclick="onPost()">确认生成短链</button>
+        </div>
+        <br/><br/>
+        <button class="update-btn" onclick="location.href='/?update=1';">修改已有短链</button>
+        <button class="github-btn" onclick="location.href='https://github.com/PIKACHUIM/CFWorkerUrls';">
+            <img src="/static/white.png" width="10px" height="10px">&nbsp;GitHub页面
+        </button>
+    </div>
+</div>
+<script>
+    // 页面载入函数 #######################################
+    function onLoad(name) {
+        const queryString = window.location.search;
+        // 使用URLSearchParams解析查询字符串 ==============
+        const urlParams = new URLSearchParams(queryString);
+        // 判断是否包含tokens参数 =========================
+        if (!urlParams.has('update')) {
+            // 获取更新元素并删除 =========================
+            document.getElementById('suffix_view').remove();
+            document.getElementById('tokens_view').remove();
+        }
+        if (urlParams.has('suffix')) {
+            const suffix = urlParams.get('suffix');
+            const suffix_full = document.getElementById('suffix_full');
+            suffix_full.value = suffix;
+
+            let result = fetchData("/q/" + suffix.split('/')[4])
+            const record_urls = document.getElementById('record_urls');
+            record_urls.value = result["record"];
+            const expire_days = document.getElementById('expire_days');
+            expire_days.value = result["expire"];
+            const typing_text = document.getElementById('typing_text');
+            typing_text.value = result["typing"];
+        }
+        if (urlParams.has('tokens')) {
+            const tokens = urlParams.get('tokens');
+            const tokens_text = document.getElementById('tokens_text');
+            tokens_text.value = tokens;
+        }
+        // if (urlParams.has('suffix') && urlParams.has('tokens')) {
+        //     const suffix = urlParams.get('suffix');
+        //     const tokens = urlParams.get('tokens');
+        //
+        // }
+
+    }
+
+    // 提交表单函数 #######################################################
+    function onPost(name) {
+        const queryString = window.location.search;
+        // 使用URLSearchParams解析查询字符串 ==============================
+        const urlParams = new URLSearchParams(queryString);
+        let suffix_full = ""
+        let tokens_text = ""
+        if (urlParams.has('update')) {
+            suffix_full = document.getElementById("suffix_full").value;
+            tokens_text = document.getElementById("tokens_text").value;
+        }
+        let record_urls = document.getElementById("record_urls").value;
+        let typing_text = document.getElementById("typing_text").value;
+        let expire_days = document.getElementById("expire_days").value;
+        // 检查内容 =======================================================
+        if (record_urls.length <= 0) {
+            window.alert("请填写目标链接");
+            return false;
+        }
+        // 发起请求 =======================================================
+        window.open("/u/" +
+            "?suffix=" + suffix_full + "&tokens=" + tokens_text +
+            "&record=" + record_urls + "&typing=" + typing_text +
+            "&expire=" + expire_days);
+    }
+
+
+    // 发送 GET 请求并获取 JSON 数据 ######################################
+    async function fetchData(url) {
+        try {
+            // 发送请求
+            const response = await fetch(url);
+            // 检查响应是否成功
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            // 解析 JSON 数据
+            const data = await response.json();
+            console.log(data); // 打印 JSON 数据
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    // 页面加载逻辑 #######################################
+    onLoad();
+</script>
+</body>
+</html>

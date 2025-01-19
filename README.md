@@ -1,2 +1,8 @@
-# CFWorkerUrls
-A URL Short &amp; STUN Redirect Service on Cloudflare Worker
+```
+npm install
+npm run dev
+```
+
+```
+npm run deploy
+```
