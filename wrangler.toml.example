@@ -17,5 +17,5 @@ binding = "DATABASE"
 # Cloudflare KV ID / CF KV数据库ID
 id = "*****************************"
 
-[observability.logs]
-enabled = true
+#[observability.logs]
+#enabled = true
