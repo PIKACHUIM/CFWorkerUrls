@@ -1,29 +1,50 @@
-import {Hono} from 'hono'
+import {Context, Hono} from 'hono'
 import {KVNamespace} from '@cloudflare/workers-types';
 import {serveStatic} from 'hono/cloudflare-workers'
-import {jsxRenderer} from 'hono/jsx-renderer'
-
+// import manifestJSON from "__STATIC_CONTENT_MANIFEST";
+// const manifest = JSON.parse(manifestJSON);
+import manifest from '__STATIC_CONTENT_MANIFEST'
 // 全局设置 ############################################################################################################
 type Bindings = {
     DATABASE: KVNamespace,
     FULL_URL: string
 }
 const app = new Hono<{ Bindings: Bindings }>();
-app.use("/static/*", serveStatic({manifest: "", root: "./public"}));
+app.use("*", serveStatic({manifest: manifest, root: "./"}));
 
 app.get('/', async (c) => {
-    return c.render(getTemp("index.html", c.env.FULL_URL))
+    // return c.redirect("/index.html", 302);
+    return redirect(c, "/index.html");
+    // return c.render(getTemp("index.html", c.env.FULL_URL));
 })
 
 // 生成页面 ############################################################################################################
 app.get('/a/', async (c) => {
-    return c.render(getTemp("index.html", c.env.FULL_URL))
+    // return c.redirect("/index.html", 302);
+    return redirect(c, "/index.html");
+    // return c.render(getTemp("index.html", c.env.FULL_URL));
 })
 
 // 结果页面 ############################################################################################################
 app.get('/i/', async (c) => {
-    return c.html(getTemp("links.html", c.env.FULL_URL))
+    // return c.redirect("/links.html", 302);
+    return redirect(c, "/links.html");
+    // return c.html(getTemp("links.html", c.env.FULL_URL));
 })
+
+// 页面跳转 ############################################################################################################
+function redirect(c: Context, path: string) {
+    const url = new URL(c.req.url);
+    const searchParams = url.searchParams;
+
+    // 构造新的 URL 并携带原始参数
+    const newUrl = new URL(path, c.req.url);
+    searchParams.forEach((value, key) => {
+        newUrl.searchParams.append(key, value);
+    });
+    return c.redirect(newUrl, 302);
+}
+
 
 // 链接跳转 ############################################################################################################
 app.get('/s/:suffix', async (c) => {
@@ -46,8 +67,7 @@ app.get('/q/:suffix', async (c) => {
     try {
         let suffix: string = c.req.param('suffix');
         // let result: string = <string>await c.env.DATABASE.get(suffix);
-        let result = await c.env.DATABASE.get(suffix);
-        result.th
+        let result: string = <string>await c.env.DATABASE.get(suffix);
         let detail = JSON.parse(result);
         console.log(detail);
         let output: Dict = {
@@ -69,6 +89,7 @@ app.get('/q/:suffix', async (c) => {
 app.get('/u/', async (c) => {
     let suffix: string = <string>c.req.query('suffix'); // 更新需要
     let tokens: string = <string>c.req.query('tokens'); // 更新需要
+
     let record: string = <string>c.req.query('record');
     let expire: string = <string>c.req.query('expire');
     let typing: string = <string>c.req.query('typing');
@@ -86,7 +107,7 @@ app.get('/u/', async (c) => {
     }
     // 输出过期时间 ================================================
     let now_is: Date = new Date();
-    let exp_is: Date = now_is.setHours(
+    let exp_is: number = now_is.setHours(
         now_is.getHours() + 24 * Number(expire))
 
     // 判断不包含协议 ==============================================
@@ -97,21 +118,28 @@ app.get('/u/', async (c) => {
     let timers: number = <number>(new Date()).getTime();
     let result: Dict = {
         suffix: suffix, expire: expire, record: record,
-        typing: typing, tokens: tokens, timers: timers
+        typing: typing, tokens: tokens, timers: timers.toString()
     }
     if (module) {
         // 判断原始密码是否相同 ------------------------------------
+        let query: string = <string>await c.env.DATABASE.get(suffix)
+        let start = JSON.parse(<string>query)
+        if (tokens != <string>start["tokens"])
+            return redirect(c, "/error.html");
+            // return c.render(getTemp("error.html", c.env.FULL_URL))
         // 删除原始的键值对数据 ------------------------------------
-        // 更新新的键值对的信息 ------------------------------------
-    } else {
-        // 写入新的键值对的信息 ------------------------------------
-        await c.env.DATABASE.put(suffix, JSON.stringify(result))
+        await c.env.DATABASE.delete(suffix)
     }
+    // 写入新的键值对的信息 ------------------------------------
+    await c.env.DATABASE.put(suffix, JSON.stringify(result))
     // 返回数据 ====================================================
     return c.redirect("/i/" +
         "?suffix=" + c.env.FULL_URL + "s/" + suffix +
         "&tokens=" + tokens +
-        "&expire=" + exp_is, 302);
+        "&record=" + record +
+        "&typing=" + typing +
+        "&expire=" + exp_is,
+        302);
 })
 
 // 生成后缀 ############################################################################################################
@@ -132,7 +160,7 @@ async function getTemp(module: string, url: string) {
     console.log(full_url)
     const response = await fetch(full_url)
     if (!response.ok) {
-        throw new Error('Failed to fetch template')
+        throw new Error('Failed to fetch template, url: ' + full_url + ",error:" + response.statusText);
     }
     return await response.text()
 }
@@ -141,5 +169,5 @@ interface Dict {
     [key: string]: string;
 }
 
-
+app.fire()
 export default app
