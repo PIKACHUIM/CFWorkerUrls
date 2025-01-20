@@ -25,6 +25,9 @@ cp wrangler.toml.example wrangler.toml
 
 ### Config / 修改配置
 修改`wrangler.toml`的内容
+ - `account_id`: 登录cloudflare，在workers-and-pages查看
+ - `FULL_URL`: 完整服务访问地址，比如https://1web.us.kg/
+ - `id`: 登录cloudflare-存储与数据库-KV-新建数据库查看ID
 ```
 account_id = "******************************"
 FULL_URL= "https://*********/"
@@ -33,6 +36,7 @@ id = "*****************************"
 
 ### Deploy / 部署云端
 ```
+wrangler login
 wrangler deploy
 ```
 
@@ -47,5 +51,5 @@ wrangler deploy
   "ipaddr": "{ip}",
   "porter": "{port}"
 }
-
 ```
+网站后缀和更新密码：https://1web.us.kg/
