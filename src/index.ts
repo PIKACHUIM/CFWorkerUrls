@@ -126,7 +126,7 @@ app.get('/u/', async (c) => {
         let start = JSON.parse(<string>query)
         if (tokens != <string>start["tokens"])
             return redirect(c, "/error.html");
-            // return c.render(getTemp("error.html", c.env.FULL_URL))
+        // return c.render(getTemp("error.html", c.env.FULL_URL))
         // 删除原始的键值对数据 ------------------------------------
         await c.env.DATABASE.delete(suffix)
     }
@@ -140,6 +140,66 @@ app.get('/u/', async (c) => {
         "&typing=" + typing +
         "&expire=" + exp_is,
         302);
+})
+
+// 自动修改 ############################################################################################################
+app.use('/p/', async (c) => {
+    // 检查请求方法
+    const method = c.req.method;
+
+    // 初始化变量
+    let tokens: string | undefined;
+    let suffix: string | undefined;
+    let typing: string | undefined;
+    let ipaddr: string | undefined;
+    let porter: string | undefined;
+    console.log(method);
+    // 如果是 POST 请求，尝试从 JSON 获取数据
+    if (method === 'POST') {
+        try {
+            const body = await c.req.json();
+            tokens = body["tokens"];
+            suffix = body["suffix"];
+            typing = body["typing"];
+            ipaddr = body["ipaddr"];
+            porter = body["porter"];
+        } catch (error) {
+            return c.text(JSON.stringify({
+                "success": false,
+                "message": "Invalid JSON format",
+            }), 400); // 返回 400 Bad Request
+        }
+    }
+
+    // 如果是 GET 请求或 POST 请求中缺少数据，尝试从 URL 参数获取
+    if (!tokens || !suffix || !typing || !ipaddr || !porter) {
+        tokens = c.req.query("tokens") || tokens;
+        suffix = c.req.query("suffix") || suffix;
+        typing = c.req.query("typing") || typing;
+        ipaddr = c.req.query("ipaddr") || ipaddr;
+        porter = c.req.query("porter") || porter;
+    }
+    suffix = <string>suffix;
+
+    // 判断原始密码是否相同 ------------------------------------
+    let query: string = <string>await c.env.DATABASE.get(suffix)
+    let start = JSON.parse(<string>query)
+    if (tokens != <string>start["tokens"])
+        return c.text(JSON.stringify({
+            "success": false,
+            "message": "Invalid password or suffix",
+        }));
+    else
+        start["record"] = typing + "://" + ipaddr + ":" + porter
+    // 删除原始的键值对数据 ------------------------------------
+    await c.env.DATABASE.delete(suffix)
+    // 写入新的键值对的信息 ------------------------------------
+    await c.env.DATABASE.put(suffix, JSON.stringify(start))
+    // 返回数据 ================================================
+    return c.text(JSON.stringify({
+        "success": true,
+        "message": "Successfully updated links"
+    }))
 })
 
 // 生成后缀 ############################################################################################################

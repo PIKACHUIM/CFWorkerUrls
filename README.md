@@ -31,8 +31,21 @@ FULL_URL= "https://*********/"
 id = "*****************************"
 ```
 
-
 ### Deploy / 部署云端
 ```
 wrangler deploy
+```
+
+### Lucky Webhook
+ - 请求类型：POST
+ - 请求地址：`https://1web.us.kg/p/`
+```json
+{
+  "suffix": "网站后缀",
+  "tokens": "更新密码",
+  "typing": "http",
+  "ipaddr": "{ip}",
+  "porter": "{port}"
+}
+
 ```
