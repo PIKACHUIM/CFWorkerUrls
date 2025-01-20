@@ -1,5 +1,10 @@
 # 使用Lucky配合本工具进行NAT穿透
 
+## 确认NAT类
+打开：https://mao.fan/mynat
+如果是NAT1，基本可以穿透
+NAT4就不用尝试了，不行的
+
 ## 申请短URL
  - 申请地址：https://1web.us.kg/
 
