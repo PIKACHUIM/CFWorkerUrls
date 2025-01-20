@@ -2,13 +2,20 @@ name = "cfworker-urls"
 main = "src/index.ts"
 compatibility_date = "2025-01-19"
 compatibility_flags = [ "nodejs_compat" ]
-account_id = "**************************"
-workers_dev = true
-assets = { directory = "./public" }
+# Account ID / 账号ID
+account_id = "******************************"
+
+[site]
+bucket = "./public"
 
 [vars]
-FULL_URL= "*********"
+# Domain URL / 网站完整域名URL
+FULL_URL= "https://*********/"
 
 [[kv_namespaces]]
 binding = "DATABASE"
+# Cloudflare KV ID / CF KV数据库ID
 id = "*****************************"
+
+[observability.logs]
+enabled = true

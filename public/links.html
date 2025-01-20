@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>皮卡短链服务</title>
+    <link href="/static/style.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+    <div class="form-container">
+        <h1>生成链接信息</h1>
+        <div class="form-group">
+            <label for="suffix_full" style="display: inline-block;">生成链接：</label>
+            <a id="suffix_link" href="">
+                <div id="suffix_full" style="display: inline-block;"></div>
+            </a>
+        </div>
+        <div class="form-group">
+            <label for="record_urls" style="display: inline-block;">目标地址：</label>
+            <div id="record_urls" style="display: inline-block;"></div>
+        </div>
+        <div class="form-group">
+            <label for="tokens_text" style="display: inline-block;">更新密码：</label>
+            <div id="tokens_text" style="display: inline-block;"></div>
+        </div>
+        <div class="form-group">
+            <label for="typing_text" style="display: inline-block;">跳转类型：</label>
+            <div id="typing_text" style="display: inline-block;"></div>
+        </div>
+        <div class="form-group">
+            <label for="expire_days" style="display: inline-block;">过期时间：</label>
+            <div id="expire_days" style="display: inline-block;"></div>
+        </div>
+        <br/><br/>
+        <button class="modify-btn" onclick="onPost()">修改链接</button>
+        <br/><br/>
+        <button class="update-btn" onclick="location.href='/';">返回主页</button>
+        <button class="github-btn" onclick="location.href='https://github.com/PIKACHUIM/CFWorkerUrls';">🐱GitHub</button>
+    </div>
+</div>
+<script>
+    // 页面载入函数 #######################################################
+    function onLoad(name) {
+        const queryString = window.location.search;
+        // 使用URLSearchParams解析查询字符串 ==============================
+        const urlParams = new URLSearchParams(queryString);
+        // 判断是否包含tokens参数 =========================================
+        if (urlParams.has('suffix')) {
+            const suffix = urlParams.get('suffix');
+            const suffix_full = document.getElementById('suffix_full');
+            const suffix_link = document.getElementById('suffix_link');
+            suffix_full.textContent = suffix;
+            suffix_link.href = suffix;
+
+        }
+        if (urlParams.has('tokens')) {
+            const tokens = urlParams.get('tokens');
+            const tokens_text = document.getElementById('tokens_text');
+            tokens_text.textContent = tokens;
+        }
+        if (urlParams.has('typing')) {
+            const typing = urlParams.get('typing');
+            const typing_text = document.getElementById('typing_text');
+            const typing_maps = {
+                "iframe": "页面嵌套",
+                "direct": "链接跳转",
+                "proxys": "云端代理",
+            };
+            typing_text.textContent = typing_maps[typing];
+        }
+        if (urlParams.has('record')) {
+            const record = urlParams.get('record');
+            const record_urls = document.getElementById('record_urls');
+            record_urls.textContent = record;
+        }
+        if (urlParams.has('expire')) {
+            const expire = urlParams.get('expire');
+            const expire_days = document.getElementById('expire_days');
+            const date_t = new Date(Number(expire));
+            expire_days.textContent = date_t.toISOString().substring(0, 19);
+        }
+    }
+
+    // 提交表单函数 #######################################################
+    function onPost(name) {
+        // 使用URLSearchParams解析查询字符串 ==============================
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const suffix_full = urlParams.get('suffix');
+        const tokens_text = urlParams.get('tokens');
+        window.open("/a/?update=1" +
+            "&suffix=" + suffix_full +
+            "&tokens=" + tokens_text
+        );
+    }
+
+    // 页面加载逻辑 #######################################
+    onLoad();
+</script>
+
+</body>
+</html>

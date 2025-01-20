@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>皮卡短链服务</title>
+    <title>网站短链服务</title>
     <link href="/static/style.css" rel="stylesheet"/>
 </head>
 <body>
@@ -20,7 +20,7 @@
         </div>
 
         <div class="form-group">
-            <label for="record_urls">目标链接：</label>
+            <label for="record_urls">目标地址：</label>
             <input type="text" id="record_urls" name="record_urls" required>
         </div>
         <!--        <div class="form-group">-->
@@ -32,9 +32,9 @@
         <div class="form-group">
             <label for="typing_text">跳转方式：</label>
             <select id="typing_text" name="typing_text">
-                <option value="direct">重定向 (推荐此方式)</option>
-                <option value="iframe">页嵌套 (兼容性不好)</option>
-                <option value="proxys">云代理 (访问速度慢)</option>
+                <option value="direct">链接跳转 (推荐此方式)</option>
+                <option value="iframe">页面嵌套 (兼容性不好)</option>
+                <option value="proxys">云端代理 (访问速度慢)</option>
             </select>
         </div>
         <div class="form-group">
@@ -75,14 +75,7 @@
             const suffix = urlParams.get('suffix');
             const suffix_full = document.getElementById('suffix_full');
             suffix_full.value = suffix;
-
             let result = fetchData("/q/" + suffix.split('/')[4])
-            const record_urls = document.getElementById('record_urls');
-            record_urls.value = result["record"];
-            const expire_days = document.getElementById('expire_days');
-            expire_days.value = result["expire"];
-            const typing_text = document.getElementById('typing_text');
-            typing_text.value = result["typing"];
         }
         if (urlParams.has('tokens')) {
             const tokens = urlParams.get('tokens');
@@ -136,6 +129,12 @@
             // 解析 JSON 数据
             const data = await response.json();
             console.log(data); // 打印 JSON 数据
+            const record_urls = document.getElementById('record_urls');
+            record_urls.value = data["record"];
+            const expire_days = document.getElementById('expire_days');
+            expire_days.value = data["expire"];
+            const typing_text = document.getElementById('typing_text');
+            typing_text.value = data["typing"];
             return data;
         } catch (error) {
             console.error('Error fetching data:', error);
