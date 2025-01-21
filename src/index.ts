@@ -67,6 +67,10 @@ app.get('/b/:suffix', async (c) => {
     let suffix: string = <string>c.req.param('suffix');
     let result: string = <string>await c.env.DATABASE.get(suffix);
     let detail = JSON.parse(result);
+    await newTime(c, suffix);
+    // 写入新的键值对的信息 ------------------------------------
+    // detail["timers"] = <number>(new Date()).getTime();
+    // await c.env.DATABASE.put(suffix, JSON.stringify(detail));
     return parser(c, detail);
 })
 
@@ -80,9 +84,14 @@ app.get('/s/:suffix', async (c) => {
         // 验证身份 ========================================================================
         if (detail["guests"] != "")
             return c.redirect("/b/" + suffix, 302);
-        else
+        else {
+            await newTime(c, suffix);
+            // 写入新的键值对的信息 ------------------------------------
+            // detail["timers"] = <number>(new Date()).getTime();
+            // await c.env.DATABASE.put(suffix, JSON.stringify(detail));
             return parser(c, detail);
-    } else c.notFound()
+        }
+    } else return c.notFound()
 })
 
 // 链接跳转 ############################################################################################################
@@ -259,10 +268,60 @@ async function getTemp(module: string, url: string) {
     return await response.text()
 }
 
+// 更新时间 ############################################################################################################
+async function newTime(c: Context, suffix: any) {
+    let result: string = <string>await c.env.DATABASE.get(suffix);
+    let detail = JSON.parse(result);
+    // 写入新的键值对的信息 ------------------------------------
+    detail["timers"] = <number>(new Date()).getTime();
+    await c.env.DATABASE.delete(suffix);
+    await c.env.DATABASE.put(suffix, JSON.stringify(detail));
+    return c.text(JSON.stringify({}));
+}
+
 // 数据模板 ############################################################################################################
 interface Dict {
     [key: string]: string;
 }
 
 app.fire()
-export default app
+// export default app
+export default {
+    async fetch(request: Request, env: Bindings, ctx: ExecutionContext) {
+        return app.fetch(request, env, ctx);
+    },
+    async scheduled(controller: ScheduledController, env: Bindings, ctx: ExecutionContext) {
+        console.log('Cron job processed');
+        try {
+            const keys = await env.DATABASE.list();
+            for (const key of keys.keys) {
+
+                const value = await env.DATABASE.get(key.name);
+                console.log(key.name, value);
+                if (value) {
+                    const detail = JSON.parse(value);
+                    const timers = detail.timers;
+                    if (!timers) {
+                        await env.DATABASE.delete(key.name);
+                        console.log("Delete Invalid", key.name, value);
+                        continue;
+                    }
+                    // 将 timers 转换为日期对象
+                    const timersDate = new Date(Number(timers));
+                    const now = new Date();
+                    // 计算时间差（天数）
+                    const diffTime: number = now.getTime() - timersDate.getTime();
+                    const expsTime: number = Number(detail["expire"]) * 1000 * 60 * 60 * 24
+                    console.log(timersDate, expsTime - diffTime, diffTime, expsTime);
+                    // 如果时间差大于等于 expireDays，则删除该键值对
+                    if (diffTime >= expsTime) {
+                        await env.DATABASE.delete(key.name);
+                        console.log(`Deleted key: ${key.name}`);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error processing cron job:', error);
+        }
+    },
+};
