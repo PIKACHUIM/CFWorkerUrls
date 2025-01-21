@@ -32,6 +32,11 @@
             <label for="expire_days" style="display: inline-block;">过期时间：</label>
             <div id="expire_days" style="display: inline-block;"></div>
         </div>
+        <div class="form-group">
+            <label for="guests_pass" style="display: inline-block;">访问密码：</label>
+            <div id="guests_pass" style="display: inline-block;"></div>
+        </div>
+        <div class="form-group hint">认证密码时，用户名请留空，密码请输入上方显示的密码</div>
         <br/><br/>
         <button class="modify-btn" onclick="onPost()">修改链接</button>
         <br/><br/>
@@ -58,6 +63,11 @@
             const tokens = urlParams.get('tokens');
             const tokens_text = document.getElementById('tokens_text');
             tokens_text.textContent = tokens;
+        }
+        if (urlParams.has('guests')) {
+            const guests = urlParams.get('guests');
+            const guests_pass = document.getElementById('guests_pass');
+            guests_pass.textContent = guests;
         }
         if (urlParams.has('typing')) {
             const typing = urlParams.get('typing');
@@ -89,9 +99,11 @@
         const urlParams = new URLSearchParams(queryString);
         const suffix_full = urlParams.get('suffix');
         const tokens_text = urlParams.get('tokens');
+        const guests_pass = urlParams.get('guests');
         window.open("/a/?update=1" +
             "&suffix=" + suffix_full +
-            "&tokens=" + tokens_text
+            "&tokens=" + tokens_text +
+            "&guests=" + guests_pass
         );
     }
 

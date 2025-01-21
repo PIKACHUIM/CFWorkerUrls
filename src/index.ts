@@ -1,9 +1,10 @@
 import {Context, Hono} from 'hono'
 import {KVNamespace} from '@cloudflare/workers-types';
 import {serveStatic} from 'hono/cloudflare-workers'
-// import manifestJSON from "__STATIC_CONTENT_MANIFEST";
-// const manifest = JSON.parse(manifestJSON);
+import {basicAuth} from 'hono/basic-auth'
+// @ts-ignore
 import manifest from '__STATIC_CONTENT_MANIFEST'
+
 // 全局设置 ############################################################################################################
 type Bindings = {
     DATABASE: KVNamespace,
@@ -12,6 +13,7 @@ type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 app.use("*", serveStatic({manifest: manifest, root: "./"}));
 
+// 主页展示 ############################################################################################################
 app.get('/', async (c) => {
     // return c.redirect("/index.html", 302);
     return redirect(c, "/index.html");
@@ -36,7 +38,6 @@ app.get('/i/', async (c) => {
 function redirect(c: Context, path: string) {
     const url = new URL(c.req.url);
     const searchParams = url.searchParams;
-
     // 构造新的 URL 并携带原始参数
     const newUrl = new URL(path, c.req.url);
     searchParams.forEach((value, key) => {
@@ -45,6 +46,29 @@ function redirect(c: Context, path: string) {
     return c.redirect(newUrl, 302);
 }
 
+// 验证方法 ############################################################################################################
+app.use(
+    '/b/:suffix',
+    basicAuth({
+        verifyUser: async (username, password, c) => {
+            let suffix: string = <string>c.req.param('suffix');
+            let result: string = <string>await c.env.DATABASE.get(suffix);
+            let detail = JSON.parse(result);
+            console.log(detail);
+            return (
+                password === detail["guests"]
+            )
+        },
+    })
+)
+
+// 验证链接 ############################################################################################################
+app.get('/b/:suffix', async (c) => {
+    let suffix: string = <string>c.req.param('suffix');
+    let result: string = <string>await c.env.DATABASE.get(suffix);
+    let detail = JSON.parse(result);
+    return parser(c, detail);
+})
 
 // 链接跳转 ############################################################################################################
 app.get('/s/:suffix', async (c) => {
@@ -52,17 +76,27 @@ app.get('/s/:suffix', async (c) => {
     let result: string = <string>await c.env.DATABASE.get(suffix);
     let detail = JSON.parse(result);
     // 判断是否有效 =============================================
-    if (detail != null) {
-        let record: string = detail["record"];
-        let typing: string = detail["typing"];
-        if (typing == "iframe") return c.html('<iframe width="100%" height="100%" src=' + record + '></iframe>');
-        if (typing == "direct") return c.redirect(record, 302);
-        if (typing == "proxys") return c.redirect("https://proxyz.opkg.us.kg/" + record, 302);
-        return c.notFound()
+    if (detail["record"] != null) {
+        // 验证身份 ========================================================================
+        if (detail["guests"] != "")
+            return c.redirect("/b/" + suffix, 302);
+        else
+            return parser(c, detail);
     } else c.notFound()
 })
 
+// 链接跳转 ############################################################################################################
+function parser(c: Context, detail: any) {
+    let record: string = detail["record"];
+    let typing: string = detail["typing"];
+    // if (typing == "iframe") return c.html('<iframe width="100%" height="100%" src=' + record + '></iframe>');
+    if (typing == "iframe") return c.html('<frameset rows="100%"> <frame src="' + record + '"> </frameset>');
+    if (typing == "direct") return c.redirect(record, 302);
+    if (typing == "proxys") return c.redirect("https://proxyz.opkg.us.kg/" + record, 302);
+    return c.notFound()
+}
 
+// 查询链接 ############################################################################################################
 app.get('/q/:suffix', async (c) => {
     try {
         let suffix: string = c.req.param('suffix');
@@ -84,12 +118,11 @@ app.get('/q/:suffix', async (c) => {
     }
 })
 
-
 // 新增链接 ############################################################################################################
 app.get('/u/', async (c) => {
     let suffix: string = <string>c.req.query('suffix'); // 更新需要
     let tokens: string = <string>c.req.query('tokens'); // 更新需要
-
+    let guests: string = <string>c.req.query('guests');
     let record: string = <string>c.req.query('record');
     let expire: string = <string>c.req.query('expire');
     let typing: string = <string>c.req.query('typing');
@@ -117,7 +150,7 @@ app.get('/u/', async (c) => {
     // 写入数据 ====================================================
     let timers: number = <number>(new Date()).getTime();
     let result: Dict = {
-        suffix: suffix, expire: expire, record: record,
+        suffix: suffix, expire: expire, record: record, guests: guests,
         typing: typing, tokens: tokens, timers: timers.toString()
     }
     if (module) {
@@ -138,6 +171,7 @@ app.get('/u/', async (c) => {
         "&tokens=" + tokens +
         "&record=" + record +
         "&typing=" + typing +
+        "&guests=" + guests +
         "&expire=" + exp_is,
         302);
 })
@@ -225,6 +259,7 @@ async function getTemp(module: string, url: string) {
     return await response.text()
 }
 
+// 数据模板 ############################################################################################################
 interface Dict {
     [key: string]: string;
 }
