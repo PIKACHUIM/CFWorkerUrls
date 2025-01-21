@@ -37,6 +37,15 @@
             <div id="guests_pass" style="display: inline-block;"></div>
         </div>
         <div class="form-group hint">认证密码时，用户名请留空，密码请输入上方显示的密码</div>
+        <div class="form-group">
+            <label for="spider_text">Web-Hook：</label>
+            <textarea id="spider_text" rows="7" cols="45"
+                      style="display: block; opacity: 0.5; border-radius: 10px;"></textarea>
+        </div>
+        <div class="form-group hint">Lucky STUN WebHook专用，WebHook-请求体，
+            <a href="https://github.com/PIKACHUIM/CFWorkerUrls/blob/main/NATDOG.md">[使用方法]</a><br/>
+        </div>
+        <div class="form-group hint" id="hostname_ip"></div>
         <br/><br/>
         <button class="modify-btn" onclick="onPost()">修改链接</button>
         <br/><br/>
@@ -53,11 +62,25 @@
         // 判断是否包含tokens参数 =========================================
         if (urlParams.has('suffix')) {
             const suffix = urlParams.get('suffix');
+            const tokens = urlParams.get('tokens');
             const suffix_full = document.getElementById('suffix_full');
             const suffix_link = document.getElementById('suffix_link');
+            const spider_text = document.getElementById('spider_text');
+            const hostname_ip = document.getElementById('hostname_ip');
             suffix_full.textContent = suffix;
             suffix_link.href = suffix;
+            spider_text.textContent = '' +
+                '{' +
+                '\n  "suffix": "' + suffix.split("/").pop() + '",' +
+                '\n  "tokens": "' + tokens + '",' +
+                '\n  "typing": "http",' +
+                '\n  "ipaddr": "{ip}",' +
+                '\n  "porter": "{port}"' +
+                '\n}';
 
+            let hostname = window.location.hostname;
+            hostname_ip.textContent = "设置请求类型：POST，请求地址：" +
+                "https://" + hostname + "/p/"
         }
         if (urlParams.has('tokens')) {
             const tokens = urlParams.get('tokens');
