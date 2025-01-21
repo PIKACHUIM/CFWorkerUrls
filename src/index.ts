@@ -295,7 +295,6 @@ export default {
         try {
             const keys = await env.DATABASE.list();
             for (const key of keys.keys) {
-
                 const value = await env.DATABASE.get(key.name);
                 console.log(key.name, value);
                 if (value) {
@@ -307,12 +306,17 @@ export default {
                         continue;
                     }
                     // 将 timers 转换为日期对象
-                    const timersDate = new Date(Number(timers));
-                    const now = new Date();
+                    const oldDate = new Date(Number(timers));
+                    const nowDate = new Date();
                     // 计算时间差（天数）
-                    const diffTime: number = now.getTime() - timersDate.getTime();
+                    const diffTime: number = nowDate.getTime() - oldDate.getTime();
                     const expsTime: number = Number(detail["expire"]) * 1000 * 60 * 60 * 24
-                    console.log(timersDate, expsTime - diffTime, diffTime, expsTime);
+                    console.log(
+                        "\nName Records: " + key.name,
+                        "\nLast Updated: " + oldDate,
+                        "\nCurrent Time: " + nowDate,
+                        "\nWaiting Hour: " + Math.ceil(diffTime / 1000 / 3600),
+                        "\nConfigs Hour: " + Math.ceil(diffTime / 1000 / 3600));
                     // 如果时间差大于等于 expireDays，则删除该键值对
                     if (diffTime >= expsTime) {
                         await env.DATABASE.delete(key.name);
