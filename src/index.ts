@@ -48,7 +48,7 @@ function redirect(c: Context, path: string) {
 
 // 验证方法 ############################################################################################################
 app.use(
-    '/b/:suffix',
+    '/b/:suffix/*',
     basicAuth({
         verifyUser: async (username, password, c) => {
             let suffix: string = <string>c.req.param('suffix');
@@ -61,34 +61,30 @@ app.use(
         },
     })
 )
-
 // 验证链接 ############################################################################################################
-app.get('/b/:suffix', async (c) => {
+app.get('/b/:suffix/*', async (c) => {
     let suffix: string = <string>c.req.param('suffix');
     let result: string = <string>await c.env.DATABASE.get(suffix);
     let detail = JSON.parse(result);
     await newTime(c, suffix);
-    // 写入新的键值对的信息 ------------------------------------
-    // detail["timers"] = <number>(new Date()).getTime();
-    // await c.env.DATABASE.put(suffix, JSON.stringify(detail));
     return parser(c, detail);
 })
 
+
 // 链接跳转 ############################################################################################################
-app.get('/s/:suffix', async (c) => {
+app.get('/s/:suffix/*', async (c) => {
     let suffix: string = <string>c.req.param('suffix')
     let result: string = <string>await c.env.DATABASE.get(suffix);
     let detail = JSON.parse(result);
     // 判断是否有效 =============================================
     if (detail["record"] != null) {
         // 验证身份 ========================================================================
-        if (detail["guests"] != "")
-            return c.redirect("/b/" + suffix, 302);
-        else {
+        if (detail["guests"] != "") {
+            let route: string[] = c.req.url.split('/'); // 获取完整请求路径
+            let extra: string = "/" + route.slice(5).join('/'); // 剩余路径
+            return c.redirect("/b/" + suffix + extra, 302);
+        } else {
             await newTime(c, suffix);
-            // 写入新的键值对的信息 ------------------------------------
-            // detail["timers"] = <number>(new Date()).getTime();
-            // await c.env.DATABASE.put(suffix, JSON.stringify(detail));
             return parser(c, detail);
         }
     } else return c.notFound()
@@ -98,10 +94,15 @@ app.get('/s/:suffix', async (c) => {
 function parser(c: Context, detail: any) {
     let record: string = detail["record"];
     let typing: string = detail["typing"];
+    // 处理子路径 ===================================================================================================
+    let route: string[] = c.req.url.split('/'); // 获取完整请求路径
+    let extra: string = "/" + route.slice(5).join('/'); // 剩余路径
+    console.log(`Extra path: ${extra}`);
+    // 处理跳转逻辑 =================================================================================================
     // if (typing == "iframe") return c.html('<iframe width="100%" height="100%" src=' + record + '></iframe>');
-    if (typing == "iframe") return c.html('<frameset rows="100%"> <frame src="' + record + '"> </frameset>');
-    if (typing == "direct") return c.redirect(record, 302);
-    if (typing == "proxys") return c.redirect("https://proxyz.opkg.us.kg/" + record, 302);
+    if (typing == "iframe") return c.html('<frameset rows="100%"> <frame src="' + record + extra + '"> </frameset>');
+    if (typing == "direct") return c.redirect(record + extra, 302);
+    if (typing == "proxys") return c.redirect("https://proxyz.opkg.us.kg/" + record + extra, 302);
     return c.notFound()
 }
 

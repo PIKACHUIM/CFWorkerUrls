@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>皮卡短链服务</title>
     <link href="/static/style.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
 </head>
 <body>
 <div class="container">
@@ -38,12 +39,17 @@
         </div>
         <div class="form-group hint">认证密码时，用户名请留空，密码请输入上方显示的密码</div>
         <div class="form-group">
-            <label for="spider_text">Web-Hook：</label>
-            <textarea id="spider_text" rows="7" cols="45"
+            <label for="spider_text">WebHook 内容：</label>
+            <textarea id="spider_text" rows="7" cols="40" onclick="onText()"
                       style="display: block; opacity: 0.5; border-radius: 10px;"></textarea>
         </div>
-        <div class="form-group hint">Lucky STUN WebHook专用，WebHook-请求体，
-            <a href="https://github.com/PIKACHUIM/CFWorkerUrls/blob/main/NATDOG.md">[使用方法]</a><br/>
+        <div class="form-group hint">Lucky-STUN穿透-编辑-WebHook-请求体，
+            <a href="https://github.com/PIKACHUIM/CFWorkerUrls/blob/main/NATDOG.md">[🔗使用方法]</a><br/>
+        </div>
+        <div class="form-group">
+            <label for="spider_path" style="display: inline-block;">WebHook 地址：</label>
+            <textarea id="spider_path" rows="1" cols="40" onclick="onPath()"
+                      style="display: block; opacity: 0.5; border-radius: 3px;"></textarea>
         </div>
         <div class="form-group hint" id="hostname_ip"></div>
         <br/><br/>
@@ -67,6 +73,8 @@
             const suffix_link = document.getElementById('suffix_link');
             const spider_text = document.getElementById('spider_text');
             const hostname_ip = document.getElementById('hostname_ip');
+            const spider_path = document.getElementById('spider_path');
+            spider_path
             suffix_full.textContent = suffix;
             suffix_link.href = suffix;
             spider_text.textContent = '' +
@@ -79,8 +87,8 @@
                 '\n}';
 
             let hostname = window.location.hostname;
-            hostname_ip.textContent = "设置请求类型：POST，请求地址：" +
-                "https://" + hostname + "/p/"
+            hostname_ip.textContent = "设置：请求类型：POST，检测成功字符串：Successfully"
+            spider_path.textContent = "https://" + hostname + "/p/"
         }
         if (urlParams.has('tokens')) {
             const tokens = urlParams.get('tokens');
@@ -130,7 +138,37 @@
         );
     }
 
-    // 页面加载逻辑 #######################################
+    // 自动复制内容 #######################################################
+    function onText() {
+        var copyText = document.getElementById("spider_text");
+        copyText.select();
+        document.execCommand("copy");
+        // alert("内容已复制");
+        Swal.fire({
+            position: 'top',
+            icon: 'success',
+            title: '内容已复制',
+            showConfirmButton: false,
+            timer: 700
+        })
+    }
+
+    // 自动复制内容 #######################################################
+    function onPath() {
+        var copyText = document.getElementById("spider_path");
+        copyText.select();
+        document.execCommand("copy");
+        // alert("内容已复制");
+        Swal.fire({
+            position: 'top',
+            icon: 'success',
+            title: '链接已复制',
+            showConfirmButton: false,
+            timer: 700
+        })
+    }
+
+    // 页面加载逻辑 #######################################################
     onLoad();
 </script>
 
