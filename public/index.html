@@ -57,7 +57,7 @@
             <input type="text" id="guests_pass" name="guests_pass" required>
         </div>
         <div class="form-group">
-            <button type="submit" onclick="onPost()">确认生成短链</button>
+            <button id="submit_push" type="submit" onclick="onPost()">确认生成短链</button>
         </div>
         <br/><br/>
         <button class="update-btn" onclick="location.href='/?update=1';">修改已有短链</button>
@@ -77,6 +77,9 @@
             // 获取更新元素并删除 =========================
             document.getElementById('suffix_view').remove();
             document.getElementById('tokens_view').remove();
+        } else {
+            let bu = document.getElementById('submit_push');
+            bu.innerText = "确认更新短链"
         }
         if (urlParams.has('suffix')) {
             const suffix = urlParams.get('suffix');
