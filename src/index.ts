@@ -1,8 +1,8 @@
 import {Context, Hono} from 'hono'
 import {KVNamespace} from '@cloudflare/workers-types';
 import {serveStatic} from 'hono/cloudflare-workers'
-import {basicAuth} from 'hono/basic-auth'
-// @ts-ignore
+import {basicAuth} from 'hono/basic-auth'// @ts-ignore
+import {handleRequest} from './proxy'// @ts-ignore
 import manifest from '__STATIC_CONTENT_MANIFEST'
 
 // 全局设置 ############################################################################################################
@@ -91,7 +91,7 @@ app.get('/s/:suffix/*', async (c) => {
 })
 
 // 链接跳转 ############################################################################################################
-function parser(c: Context, detail: any) {
+async function parser(c: Context, detail: any) {
     let record: string = detail["record"];
     let typing: string = detail["typing"];
     // 处理子路径 ===================================================================================================
@@ -103,6 +103,17 @@ function parser(c: Context, detail: any) {
     if (typing == "iframe") return c.html('<frameset rows="100%"> <frame src="' + record + extra + '"> </frameset>');
     if (typing == "direct") return c.redirect(record + extra, 302);
     if (typing == "proxys") return c.redirect("https://proxyz.opkg.us.kg/" + record + extra, 302);
+    if (typing == "hidden") {
+        // 返回响应给客户端
+        const result = await handleRequest(c.env.FULL_URL + record + extra);
+        // 由于直接返回fetch得到的response可能会出现"TypeError: Can't modify immutable headers"错误，
+        // 因此需要重新封装response
+        return new Response(result.body, {
+            status: result.status,
+            statusText: result.statusText,
+            headers: Object.fromEntries(result.headers.entries())
+        });
+    }
     return c.notFound()
 }
 
@@ -156,7 +167,7 @@ app.get('/u/', async (c) => {
     // 判断不包含协议 ==============================================
     if (!record.includes("http://") && !record.includes("https://"))
         record = "http://" + record
-
+    record = record.replace(/\/+$/, '');
     // 写入数据 ====================================================
     let timers: number = <number>(new Date()).getTime();
     let result: Dict = {
