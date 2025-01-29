@@ -9,8 +9,10 @@ account_id = "******************************"
 bucket = "./public"
 
 [vars]
-# Domain URL / 网站完整域名URL
-FULL_URL= "https://*********/"
+# Domain URL / 网站完整域名路径
+FULL_URL= "https://**********/"
+EDIT_SUB=false # 启用自定义路径
+EDIT_LEN=8 # 自定义后缀最短长度
 
 [[kv_namespaces]]
 binding = "DATABASE"

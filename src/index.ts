@@ -4,27 +4,26 @@ import {serveStatic} from 'hono/cloudflare-workers'
 import {basicAuth} from 'hono/basic-auth'// @ts-ignore
 import {handleRequest} from './proxy'// @ts-ignore
 import manifest from '__STATIC_CONTENT_MANIFEST'
+import {update} from "hono/dist/types/jsx/dom/render";
 
 // 全局设置 ############################################################################################################
 type Bindings = {
     DATABASE: KVNamespace,
     FULL_URL: string
+    EDIT_SUB: boolean
+    EDIT_LEN: string
 }
 const app = new Hono<{ Bindings: Bindings }>();
 app.use("*", serveStatic({manifest: manifest, root: "./"}));
 
 // 主页展示 ############################################################################################################
 app.get('/', async (c) => {
-    // return c.redirect("/index.html", 302);
     return redirect(c, "/index.html");
-    // return c.render(getTemp("index.html", c.env.FULL_URL));
 })
 
 // 生成页面 ############################################################################################################
 app.get('/a/', async (c) => {
-    // return c.redirect("/index.html", 302);
     return redirect(c, "/index.html");
-    // return c.render(getTemp("index.html", c.env.FULL_URL));
 })
 
 // 结果页面 ############################################################################################################
@@ -147,35 +146,51 @@ app.get('/u/', async (c) => {
     let record: string = <string>c.req.query('record');
     let expire: string = <string>c.req.query('expire');
     let typing: string = <string>c.req.query('typing');
+    let update: string = <string>c.req.query('update');
     let module: boolean = false // false-新增 true-修改
-    // 有suffix，则为更新链接 ======================================
     if (suffix != "") {
-        suffix = suffix.replace(c.env.FULL_URL, "");
-        suffix = suffix.replace("s/", "");
-        module = true;
+        // 有suffix但是没有update，新增自定义链接 =======================
+        if (update?.length === 0
+            || update === undefined
+            || update === null) {
+            if (!c.env.EDIT_SUB)
+                return c.html("<script>alert('未启用自定后缀')</script>")
+            if (suffix.length < Number(c.env.EDIT_LEN))
+                return c.html("<script>alert('自定义后缀过短')</script>")
+            let query: string = <string>await c.env.DATABASE.get(suffix)
+            if (query !== null && query.length > 0)
+                return c.html("<script>alert('此后缀已经存在')</script>")
+            tokens = <string>newUUID(16);
+        }
+        // 有update，则为更新链接 =======================================
+        else {
+            suffix = suffix.replace(c.env.FULL_URL, "");
+            suffix = suffix.replace("s/", "");
+            module = true;
+        }
     }
-    // 否则生成新的 ================================================
+    // 都没有，生成新的 =================================================
     else {
         suffix = <string>newUUID(8);
         tokens = <string>newUUID(16);
     }
-    // 输出过期时间 ================================================
+    // 输出过期时间 =================================================
     let now_is: Date = new Date();
     let exp_is: number = now_is.setHours(
         now_is.getHours() + 24 * Number(expire))
 
-    // 判断不包含协议 ==============================================
+    // 判断不包含协议 ===============================================
     if (!record.includes("http://") && !record.includes("https://"))
         record = "http://" + record
     record = record.replace(/\/+$/, '');
-    // 写入数据 ====================================================
+    // 写入数据 =====================================================
     let timers: number = <number>(new Date()).getTime();
     let result: Dict = {
         suffix: suffix, expire: expire, record: record, guests: guests,
         typing: typing, tokens: tokens, timers: timers.toString()
     }
     if (module) {
-        // 判断原始密码是否相同 ------------------------------------
+        // 判断原始密码是否相同 --------------------------------------
         let query: string = <string>await c.env.DATABASE.get(suffix)
         let start = JSON.parse(<string>query)
         if (tokens != <string>start["tokens"])

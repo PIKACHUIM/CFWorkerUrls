@@ -12,11 +12,11 @@
         <h1>网站短链服务</h1>
         <div class="form-group" id="suffix_view">
             <label for="suffix_full">生成链接：</label>
-            <input type="text" id="suffix_full" name="suffix_full" required>
+            <input type="text" id="suffix_full" name="suffix_full">
         </div>
         <div class="form-group" id="tokens_view">
             <label for="tokens_text">更新密码：</label>
-            <input type="text" id="tokens_text" name="tokens_text" required>
+            <input type="text" id="tokens_text" name="tokens_text">
         </div>
 
         <div class="form-group">
@@ -55,7 +55,12 @@
         <div class="form-group">
             <label for="guests_pass">访问密码：</label>
             <div class="form-group hint">可选的密码，为空则不设置访问密码</div>
-            <input type="text" id="guests_pass" name="guests_pass" required>
+            <input type="text" id="guests_pass" name="guests_pass">
+        </div>
+        <div class="form-group" id="suffix_flag">
+            <label for="suffix_edit">设置后缀：</label>
+            <div class="form-group hint">可选自定义后缀路径，留空自动生成</div>
+            <input type="text" id="suffix_edit" name="suffix_full">
         </div>
         <div class="form-group">
             <button id="submit_push" type="submit" onclick="onPost()">确认生成短链</button>
@@ -79,9 +84,14 @@
             document.getElementById('suffix_view').remove();
             document.getElementById('tokens_view').remove();
         } else {
+            document.getElementById('suffix_flag').remove();
             let bu = document.getElementById('submit_push');
             bu.innerText = "确认更新短链"
         }
+        // if (!urlParams.has('allows')) {
+        //     // 获取更新元素并删除 =========================
+        //     document.getElementById('suffix_flag').remove();
+        // }
         if (urlParams.has('suffix')) {
             const suffix = urlParams.get('suffix');
             const suffix_full = document.getElementById('suffix_full');
@@ -113,10 +123,13 @@
         const urlParams = new URLSearchParams(queryString);
         let suffix_full = ""
         let tokens_text = ""
+        let update_text = urlParams.get('update');
+        let allows_text = urlParams.get('allows');
         if (urlParams.has('update')) {
             suffix_full = document.getElementById("suffix_full").value;
             tokens_text = document.getElementById("tokens_text").value;
-        }
+        } else
+            suffix_full = document.getElementById("suffix_edit").value;
         let guests_pass = document.getElementById("guests_pass").value;
         let record_urls = document.getElementById("record_urls").value;
         let typing_text = document.getElementById("typing_text").value;
@@ -130,7 +143,8 @@
         window.open("/u/" +
             "?suffix=" + suffix_full + "&tokens=" + tokens_text +
             "&record=" + record_urls + "&typing=" + typing_text +
-            "&expire=" + expire_days + "&guests=" + guests_pass);
+            "&expire=" + expire_days + "&guests=" + guests_pass+
+            "&update=" + update_text);
     }
 
 

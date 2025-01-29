@@ -53,3 +53,13 @@ wrangler deploy
 }
 ```
 网站后缀和更新密码：https://1web.us.kg/
+
+### 自定义路径
+修改`wrangler.toml`文件：
+```yaml
+...
+[vars]
+EDIT_SUB=true # <--- set true
+EDIT_LEN=8
+...
+```
