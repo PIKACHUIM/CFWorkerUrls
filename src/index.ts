@@ -149,14 +149,18 @@ app.get('/u/', async (c) => {
     let update: string = <string>c.req.query('update');
     let module: boolean = false // false-新增 true-修改
     if (suffix != "") {
+        console.log(update, update === null);
         // 有suffix但是没有update，新增自定义链接 =======================
-        if (update?.length === 0
-            || update === undefined
-            || update === null) {
+        if (update === undefined
+            || update === null
+            || update?.length === 0) {
             if (!c.env.EDIT_SUB)
                 return c.html("<script>alert('未启用自定后缀')</script>")
-            if (suffix.length < Number(c.env.EDIT_LEN))
-                return c.html("<script>alert('自定义后缀过短')</script>")
+            if (suffix.length < Number(c.env.EDIT_LEN)) {
+                let h = "后缀太短，要求长度>=" + c.env.EDIT_LEN
+                return c.html("<script>alert('设置" + h + "')</script>")
+            }
+
             let query: string = <string>await c.env.DATABASE.get(suffix)
             if (query !== null && query.length > 0)
                 return c.html("<script>alert('此后缀已经存在')</script>")

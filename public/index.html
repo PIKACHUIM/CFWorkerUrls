@@ -123,11 +123,11 @@
         const urlParams = new URLSearchParams(queryString);
         let suffix_full = ""
         let tokens_text = ""
-        let update_text = urlParams.get('update');
-        let allows_text = urlParams.get('allows');
+        let update_text = "";
         if (urlParams.has('update')) {
             suffix_full = document.getElementById("suffix_full").value;
             tokens_text = document.getElementById("tokens_text").value;
+            update_text = urlParams.get('update');
         } else
             suffix_full = document.getElementById("suffix_edit").value;
         let guests_pass = document.getElementById("guests_pass").value;
@@ -143,7 +143,7 @@
         window.open("/u/" +
             "?suffix=" + suffix_full + "&tokens=" + tokens_text +
             "&record=" + record_urls + "&typing=" + typing_text +
-            "&expire=" + expire_days + "&guests=" + guests_pass+
+            "&expire=" + expire_days + "&guests=" + guests_pass +
             "&update=" + update_text);
     }
 
