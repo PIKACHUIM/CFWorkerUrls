@@ -79,11 +79,14 @@ app.get('/b/:suffix/*', async (c) => {
 app.get('/s/:suffix/*', async (c) => {
     let guests: string = <string>c.req.query('guests')
     let suffix: string = <string>c.req.param('suffix')
+    // 判断是否有效 =============================================
+    if (suffix === undefined || suffix === null || suffix == "")
+        return c.notFound();
     let result: string = <string>await c.env.DATABASE.get(suffix);
     let detail = JSON.parse(result);
     // 判断是否有效 =============================================
-    if (detail["record"] != null) {
-        // 验证身份 ========================================================================
+    if (detail != undefined && detail["record"] != null) {
+        // 验证身份 ===========================================================
         if (detail["guests"] != "") {
             // 使用页面认证方法 -----------------------------------------------
             if (c.env.AUTH_USE) {
@@ -107,7 +110,7 @@ app.get('/s/:suffix/*', async (c) => {
             await newTime(c, suffix);
             return parser(c, detail);
         }
-    } else return c.notFound()
+    } else return c.notFound();
 })
 
 // 链接跳转 ############################################################################################################
