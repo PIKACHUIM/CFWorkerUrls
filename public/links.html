@@ -13,13 +13,15 @@
         <h1>生成链接信息</h1>
         <div class="form-group">
             <label for="suffix_full" style="display: inline-block;">生成链接：</label>
-            <a id="suffix_link" href="">
+            <a id="suffix_link" href="" target="_blank">
                 <div id="suffix_full" style="display: inline-block;"></div>
             </a>
         </div>
         <div class="form-group">
             <label for="record_urls" style="display: inline-block;">目标地址：</label>
-            <div id="record_urls" style="display: inline-block;"></div>
+            <a id="record_link" href="" target="_blank">
+                <div id="record_urls" style="display: inline-block;"></div>
+            </a>
         </div>
         <div class="form-group">
             <label for="tokens_text" style="display: inline-block;">更新密码：</label>
@@ -52,6 +54,7 @@
                       style="display: block; opacity: 0.5; border-radius: 3px;"></textarea>
         </div>
         <div class="form-group hint" id="hostname_ip"></div>
+        <div class="form-group hint">上述信息仅显示一次，离开或关闭本页面后将无法再次查看</div>
         <br/><br/>
         <button class="modify-btn" onclick="onPost()">修改链接</button>
         <br/><br/>
@@ -114,6 +117,8 @@
         if (urlParams.has('record')) {
             const record = urlParams.get('record');
             const record_urls = document.getElementById('record_urls');
+            const record_link = document.getElementById('record_link');
+            record_link.href = record;
             record_urls.textContent = record;
         }
         if (urlParams.has('expire')) {
