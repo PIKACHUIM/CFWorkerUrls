@@ -4,6 +4,7 @@ import {serveStatic} from 'hono/cloudflare-workers'
 import {basicAuth} from 'hono/basic-auth'// @ts-ignore
 import {handleRequest} from './proxy'// @ts-ignore
 import manifest from '__STATIC_CONTENT_MANIFEST'
+// @ts-ignore
 import {update} from "hono/dist/types/jsx/dom/render";
 
 // 全局设置 ############################################################################################################
