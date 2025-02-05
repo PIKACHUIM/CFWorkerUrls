@@ -92,7 +92,9 @@ app.get('/s/:suffix/*', async (c) => {
                     return c.redirect("/login.html?suffix=" + suffix, 302);
                 else if (guests == detail["guests"])
                     return parser(c, detail);
-                return c.redirect("/login.html?suffix=" + suffix, 302);
+                // return c.redirect("/login.html?suffix=" + suffix, 302);
+                return c.html("<script>alert('密码不正确或跳转链接不存在');" +
+                    "\nwindow.close();</script>")
             }
             // 使用Basic Auth认证 ---------------------------------------------
             else {
@@ -175,15 +177,18 @@ app.get('/u/', async (c) => {
             || update === null
             || update?.length === 0) {
             if (!c.env.EDIT_SUB)
-                return c.html("<script>alert('未启用自定后缀')</script>")
+                return c.html("<script>alert('未启用自定后缀');" +
+                    "\nwindow.close();</script>");
             if (suffix.length < Number(c.env.EDIT_LEN)) {
                 let h = "后缀太短，要求长度>=" + c.env.EDIT_LEN
-                return c.html("<script>alert('设置" + h + "')</script>")
+                return c.html("<script>alert('设置" + h + "');" +
+                    "\nwindow.close();</script>");
             }
 
             let query: string = <string>await c.env.DATABASE.get(suffix)
             if (query !== null && query.length > 0)
-                return c.html("<script>alert('此后缀已经存在')</script>")
+                return c.html("<script>alert('此后缀已经存在');" +
+                    "\nwindow.close();</script>");
             tokens = <string>newUUID(16);
         }
         // 有update，则为更新链接 =======================================
