@@ -90,7 +90,7 @@
             bu.innerText = "确认更新短链"
             let up = document.getElementById('update_push');
             up.innerText = "返回网站主页"
-            up.onclick="location.href='/';"
+            up.onclick = function() {location.href = '/';};
         }
         // if (!urlParams.has('allows')) {
         //     // 获取更新元素并删除 =========================
