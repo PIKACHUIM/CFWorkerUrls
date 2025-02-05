@@ -66,7 +66,7 @@
             <button id="submit_push" type="submit" onclick="onPost()">确认生成短链</button>
         </div>
         <br/><br/>
-        <button class="update-btn" onclick="location.href='/?update=1';">修改已有短链</button>
+        <button id="update_push" class="update-btn" onclick="location.href='/?update=1';">修改已有短链</button>
         <button class="github-btn" onclick="location.href='https://github.com/PIKACHUIM/CFWorkerUrls';">
             <img src="/static/white.png" width="10px" height="10px">&nbsp;GitHub页面
         </button>
@@ -83,6 +83,8 @@
             // 获取更新元素并删除 =========================
             document.getElementById('suffix_view').remove();
             document.getElementById('tokens_view').remove();
+            let bu = document.getElementById('update_push');
+            bu.innerText = "返回网站主页"
         } else {
             document.getElementById('suffix_flag').remove();
             let bu = document.getElementById('submit_push');
