@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站短链服务</title>
+    <link href="/static/style.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+    <div class="form-container">
+        <h1>跳转身份认证</h1>
+        <div class="form-group" id="suffix_view">
+            <label for="guests_full">访问密码：</label>
+            <input type="text" id="guests_full" name="guests_full">
+        </div>
+        <div class="form-group">
+            <button id="submit_push" type="submit" onclick="onPost()">确认跳转</button>
+        </div>
+        <br/><br/>
+        <button class="update-btn" onclick="location.href='/?update=1';">返回主页</button>
+    </div>
+</div>
+<script>
+    // 页面载入函数 #######################################
+    function onLoad(name) {
+
+    }
+
+    // 提交表单函数 #######################################################
+    function onPost(name) {
+        const queryString = window.location.search;
+        // 使用URLSearchParams解析查询字符串 ==============================
+        const urlParams = new URLSearchParams(queryString);
+        const suffix_full = urlParams.get('suffix');
+        const guests_full = document.getElementById("guests_full").value;
+        // 检查内容 =======================================================
+        if (guests_full.length <= 0) {
+            window.alert("请填写访问密码");
+            return false;
+        }
+        // 发起请求 =======================================================
+        window.open("/s/" + suffix_full + "/?guests=" + guests_full);
+    }
+
+    // 页面加载逻辑 #######################################
+    onLoad();
+</script>
+</body>
+</html>

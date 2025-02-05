@@ -10,8 +10,9 @@ import {update} from "hono/dist/types/jsx/dom/render";
 type Bindings = {
     DATABASE: KVNamespace,
     FULL_URL: string
-    EDIT_SUB: boolean
     EDIT_LEN: string
+    EDIT_SUB: boolean
+    AUTH_USE: boolean
 }
 const app = new Hono<{ Bindings: Bindings }>();
 app.use("*", serveStatic({manifest: manifest, root: "./"}));
@@ -28,9 +29,12 @@ app.get('/a/', async (c) => {
 
 // 结果页面 ############################################################################################################
 app.get('/i/', async (c) => {
-    // return c.redirect("/links.html", 302);
     return redirect(c, "/links.html");
-    // return c.html(getTemp("links.html", c.env.FULL_URL));
+})
+
+// 结果页面 ############################################################################################################
+app.get('/c/:suffix/*', async (c) => {
+    return redirect(c, "/login.html");
 })
 
 // 页面跳转 ############################################################################################################
@@ -72,6 +76,7 @@ app.get('/b/:suffix/*', async (c) => {
 
 // 链接跳转 ############################################################################################################
 app.get('/s/:suffix/*', async (c) => {
+    let guests: string = <string>c.req.query('guests')
     let suffix: string = <string>c.req.param('suffix')
     let result: string = <string>await c.env.DATABASE.get(suffix);
     let detail = JSON.parse(result);
@@ -79,9 +84,22 @@ app.get('/s/:suffix/*', async (c) => {
     if (detail["record"] != null) {
         // 验证身份 ========================================================================
         if (detail["guests"] != "") {
-            let route: string[] = c.req.url.split('/'); // 获取完整请求路径
-            let extra: string = "/" + route.slice(5).join('/'); // 剩余路径
-            return c.redirect("/b/" + suffix + extra, 302);
+            // 使用页面认证方法 -----------------------------------------------
+            if (c.env.AUTH_USE) {
+                // 还未认证 ---------------------------------------------------
+                if (guests === undefined || guests === null)
+                    return c.redirect("/login.html?suffix=" + suffix, 302);
+                else if (guests == detail["guests"])
+                    return parser(c, detail);
+                return c.redirect("/login.html?suffix=" + suffix, 302);
+            }
+            // 使用Basic Auth认证 ---------------------------------------------
+            else {
+                let route: string[] = c.req.url.split('/'); // 获取完整请求路径
+                let extra: string = "/" + route.slice(5).join('/'); // 剩余路径
+                return c.redirect("/b/" + suffix + extra, 302);
+            }
+
         } else {
             await newTime(c, suffix);
             return parser(c, detail);
@@ -96,7 +114,8 @@ async function parser(c: Context, detail: any) {
     // 处理子路径 ===================================================================================================
     let route: string[] = c.req.url.split('/'); // 获取完整请求路径
     let extra: string = "/" + route.slice(5).join('/'); // 剩余路径
-    console.log(`Extra path: ${extra}`);
+    extra = removeGuestsParam(extra);
+    // console.log(`Extra path: ${extra}`);
     // 处理跳转逻辑 =================================================================================================
     // if (typing == "iframe") return c.html('<iframe width="100%" height="100%" src=' + record + '></iframe>');
     if (typing == "iframe") return c.html('<frameset rows="100%"> <frame src="' + record + extra + '"> </frameset>');
@@ -310,10 +329,23 @@ async function newTime(c: Context, suffix: any) {
     return c.text(JSON.stringify({}));
 }
 
+// 移除参数 ############################################################################################################
+function removeGuestsParam(url: string): string {
+    // 创建一个 URL 对象
+    const urlObj = new URL("https://example.com" + url);
+    // 获取搜索参数
+    const searchParams = urlObj.searchParams;
+    // 删除 guests 参数
+    searchParams.delete('guests');
+    // 返回新的 URL 字符串
+    return urlObj.toString().replace("https://example.com", "");
+}
+
 // 数据模板 ############################################################################################################
 interface Dict {
     [key: string]: string;
 }
+
 
 app.fire()
 // export default app
