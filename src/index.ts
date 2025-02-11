@@ -58,7 +58,7 @@ app.use(
             let suffix: string = <string>c.req.param('suffix');
             let result: string = <string>await c.env.DATABASE.get(suffix);
             let detail = JSON.parse(result);
-            console.log(detail);
+            // console.log(detail);
             return (
                 password === detail["guests"]
             )
@@ -144,21 +144,24 @@ async function parser(c: Context, detail: any) {
 // 查询链接 ############################################################################################################
 app.get('/q/:suffix', async (c) => {
     try {
-        let suffix: string = c.req.param('suffix');
-        // let result: string = <string>await c.env.DATABASE.get(suffix);
+        let suffix: string | undefined = c.req.param('suffix');
+        let record: string | undefined = c.req.param('record');
         let result: string = <string>await c.env.DATABASE.get(suffix);
         let detail = JSON.parse(result);
-        console.log(detail);
-        let output: Dict = {
-            suffix: detail["suffix"],
-            expire: detail["expire"],
-            record: detail["record"],
-            typing: detail["typing"],
-            timers: detail["timers"]
-        };
-        return c.text(JSON.stringify(output));
+        // console.log(detail);
+        if (record === undefined || record === null || record == "") {
+            let output: Dict = {
+                suffix: detail["suffix"],
+                expire: detail["expire"],
+                record: detail["record"],
+                typing: detail["typing"],
+                timers: detail["timers"],
+            };
+            return c.text(JSON.stringify(output));
+        }
+        return c.text(detail["record"]);
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         return c.notFound()
     }
 })
@@ -174,7 +177,7 @@ app.get('/u/', async (c) => {
     let update: string = <string>c.req.query('update');
     let module: boolean = false // false-新增 true-修改
     if (suffix != "") {
-        console.log(update, update === null);
+        // console.log(update, update === null);
         // 有suffix但是没有update，新增自定义链接 =======================
         if (update === undefined
             || update === null
@@ -255,7 +258,7 @@ app.use('/p/', async (c) => {
     let typing: string | undefined;
     let ipaddr: string | undefined;
     let porter: string | undefined;
-    console.log(method);
+    // console.log(method);
     // 如果是 POST 请求，尝试从 JSON 获取数据
     if (method === 'POST') {
         try {
@@ -319,7 +322,7 @@ function newUUID(length: number = 16): string {
 // 读取模板 ############################################################################################################
 async function getTemp(module: string, url: string) {
     let full_url: string = url + "static/" + module
-    console.log(full_url)
+    // console.log(full_url)
     const response = await fetch(full_url)
     if (!response.ok) {
         throw new Error('Failed to fetch template, url: ' + full_url + ",error:" + response.statusText);
