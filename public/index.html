@@ -34,9 +34,10 @@
             <div class="form-group hint">页面嵌套仅支持HTTPS,但可隐藏地址</div>
             <select id="typing_text" name="typing_text">
                 <option value="direct">链接跳转 (推荐此方式)</option>
-                <option value="iframe">页面嵌套 (兼容性不好)</option>
-                <option value="proxys">云端代理 (访问速度慢)</option>
+                <option value="iframe">页面嵌套 (不支持HTTP)</option>
+                <option value="proxys">显式代理 (兼容性不好)</option>
                 <option value="hidden">隐藏代理 (兼容性不好)</option>
+                <option value="agents">前置代理 (全自动分流)</option>
             </select>
         </div>
         <div class="form-group">

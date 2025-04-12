@@ -1,4 +1,5 @@
 import {Context, Hono} from 'hono'
+import {cors} from 'hono/cors'
 import {KVNamespace} from '@cloudflare/workers-types';
 import {serveStatic} from 'hono/cloudflare-workers'
 import {basicAuth} from 'hono/basic-auth'// @ts-ignore
@@ -11,11 +12,45 @@ import {update} from "hono/dist/types/jsx/dom/render";
 type Bindings = {
     DATABASE: KVNamespace,
     FULL_URL: string
+    Protocol: string
     EDIT_LEN: string
     EDIT_SUB: boolean
     AUTH_USE: boolean
 }
 const app = new Hono<{ Bindings: Bindings }>();
+app.use(
+    '*',
+    cors({
+        // `c` is a `Context` object
+        origin: "*"
+    })
+)
+
+
+// 中间件：仅子域名 *.xxx.xxx 直接进行代理 =============================================================================
+app.use('*', async (c, next) => {
+    const origin_host = c.req.header('host') || ''
+    const server_host = c.env.FULL_URL.replace(/\./g, '\\.'); // 转义正则中的点号
+    const isSubdomain = new RegExp(`^.+\.${server_host}$`).test(origin_host);  // 动态构建正则表达式
+    if (isSubdomain) {
+        const sub_text: string = origin_host.split('.')[0]
+        const sub_data: any = await reader(c, sub_text.toUpperCase());
+        // 返回响应给客户端
+        let extra: string = new URL(c.req.url).pathname + new URL(c.req.url).search
+        const result = await handleRequest(
+            sub_data["record"] + extra, c.req.method, c.req.header,
+            await c.req.blob(), sub_data["record"], false, false
+        );
+        //需要重新封装response
+        return new Response(result.body, {
+            status: result.status,
+            statusText: result.statusText,
+            headers: Object.fromEntries(result.headers.entries())
+        });
+    }
+    await next() // 非子域名继续后续路由
+})
+
 app.use("*", serveStatic({manifest: manifest, root: "./"}));
 
 // 主页展示 ############################################################################################################
@@ -71,8 +106,13 @@ app.get('/b/:suffix/*', async (c) => {
     let result: string = <string>await c.env.DATABASE.get(suffix);
     let detail = JSON.parse(result);
     await newTime(c, suffix);
-    return parser(c, detail);
+    return parser(c, detail, suffix);
 })
+
+async function reader(c: Context<{ Bindings: Bindings; }, "*", {}>, suffix: string) {
+    let result: string = <string>await c.env.DATABASE.get(suffix);
+    return JSON.parse(result);
+}
 
 
 // 链接跳转 ############################################################################################################
@@ -82,8 +122,7 @@ app.get('/s/:suffix/*', async (c) => {
     // 判断是否有效 =============================================
     if (suffix === undefined || suffix === null || suffix == "")
         return c.notFound();
-    let result: string = <string>await c.env.DATABASE.get(suffix);
-    let detail = JSON.parse(result);
+    let detail: any = await reader(c, suffix);
     // 判断是否有效 =============================================
     if (detail != undefined && detail["record"] != null) {
         // 验证身份 ===========================================================
@@ -94,7 +133,7 @@ app.get('/s/:suffix/*', async (c) => {
                 if (guests === undefined || guests === null)
                     return c.redirect("/login.html?suffix=" + suffix, 302);
                 else if (guests == detail["guests"])
-                    return parser(c, detail);
+                    return parser(c, detail, suffix);
                 // return c.redirect("/login.html?suffix=" + suffix, 302);
                 return c.html("<script>alert('密码不正确或跳转链接不存在');" +
                     "\nwindow.close();</script>")
@@ -108,13 +147,13 @@ app.get('/s/:suffix/*', async (c) => {
 
         } else {
             await newTime(c, suffix);
-            return parser(c, detail);
+            return parser(c, detail, suffix);
         }
     } else return c.notFound();
 })
 
 // 链接跳转 ############################################################################################################
-async function parser(c: Context, detail: any) {
+async function parser(c: Context, detail: any, suffix: string = "") {
     let record: string = detail["record"];
     let typing: string = detail["typing"];
     // 处理子路径 ===================================================================================================
@@ -124,19 +163,19 @@ async function parser(c: Context, detail: any) {
     // console.log(`Extra path: ${extra}`);
     // 处理跳转逻辑 =================================================================================================
     // if (typing == "iframe") return c.html('<iframe width="100%" height="100%" src=' + record + '></iframe>');
+    // console.log(c.env.Protocol + "://" + suffix + "." + c.env.FULL_URL + "/")
     if (typing == "iframe") return c.html('<frameset rows="100%"> <frame src="' + record + extra + '"> </frameset>');
     if (typing == "direct") return c.redirect(record + extra, 302);
-    if (typing == "proxys") return c.redirect("https://proxyz.opkg.us.kg/" + record + extra, 302);
-    if (typing == "hidden") {
-        // 返回响应给客户端
-        const result = await handleRequest(c.env.FULL_URL + record + extra);
-        // 由于直接返回fetch得到的response可能会出现"TypeError: Can't modify immutable headers"错误，
-        // 因此需要重新封装response
+    if (typing == "proxys") return c.redirect("https://proxyz.524228.xyz/" + record + extra, 302);
+    if (typing == "agents") return c.redirect("http://" + suffix + "." + c.env.FULL_URL + "/", 302);
+    if (typing == "hidden") {// 返回响应给客户端
+        const result = await handleRequest(c.env.Protocol + "://" + c.env.FULL_URL + "/" + record + extra);
+        // 由于直接返回fetch得到的response会出现 Can't modify immutable headers错误，因此需要重新封装response
         return new Response(result.body, {
             status: result.status,
             statusText: result.statusText,
             headers: Object.fromEntries(result.headers.entries())
-        });
+        })
     }
     return c.notFound()
 }
@@ -199,7 +238,8 @@ app.get('/u/', async (c) => {
         }
         // 有update，则为更新链接 =======================================
         else {
-            suffix = suffix.replace(c.env.FULL_URL, "");
+            let tp = c.env.Protocol + "://" + c.env.FULL_URL + "/"
+            suffix = suffix.replace(tp, "");
             suffix = suffix.replace("s/", "");
             module = true;
         }
@@ -230,15 +270,15 @@ app.get('/u/', async (c) => {
         let start = JSON.parse(<string>query)
         if (tokens != <string>start["tokens"])
             return redirect(c, "/error.html");
-        // return c.render(getTemp("error.html", c.env.FULL_URL))
         // 删除原始的键值对数据 ------------------------------------
         await c.env.DATABASE.delete(suffix)
     }
     // 写入新的键值对的信息 ------------------------------------
     await c.env.DATABASE.put(suffix, JSON.stringify(result))
     // 返回数据 ====================================================
+    let tp = c.env.Protocol + "://" + c.env.FULL_URL + "/"
     return c.redirect("/i/" +
-        "?suffix=" + c.env.FULL_URL + "s/" + suffix +
+        "?suffix=" + tp + "s/" + suffix +
         "&tokens=" + tokens +
         "&record=" + record +
         "&typing=" + typing +
@@ -322,7 +362,6 @@ function newUUID(length: number = 16): string {
 // 读取模板 ############################################################################################################
 async function getTemp(module: string, url: string) {
     let full_url: string = url + "static/" + module
-    // console.log(full_url)
     const response = await fetch(full_url)
     if (!response.ok) {
         throw new Error('Failed to fetch template, url: ' + full_url + ",error:" + response.statusText);
@@ -360,6 +399,7 @@ interface Dict {
 
 
 app.fire()
+// 定时任务 ############################################################################################################
 // export default app
 export default {
     async fetch(request: Request, env: Bindings, ctx: ExecutionContext) {
