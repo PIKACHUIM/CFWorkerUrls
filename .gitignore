@@ -14,7 +14,7 @@ dist/
 # deps
 node_modules/
 .wrangler
-wrangler.toml
+wrangler.encrypt.toml
 
 # env
 .env
@@ -32,3 +32,10 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+
+# Tencent Cloud EdgeOne
+.env
+.edgeone/*
+!.edgeone/project.json
+.tef_dist/*
+  

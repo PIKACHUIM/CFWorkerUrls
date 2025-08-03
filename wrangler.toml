@@ -1,0 +1,27 @@
+# Basic Config / 基本设置 ===================
+name = "cfworker-urls"
+main = "src/index.ts"
+compatibility_date = "2025-01-19"
+compatibility_flags = [ "nodejs_compat" ]
+# Account ID / 账号ID，请修改下方星号的内容！
+account_id = "******************************"
+
+# Bucket Config / 存储设置 ==================
+[site]
+bucket = "./public"
+[[kv_namespaces]]
+binding = "DATABASE"
+# Cloudflare KV ID / CF KV数据库ID，请修改ID
+id = "**************************************"
+
+# Website Config / 网站配置 =================
+[vars]
+# Domain URL / 网站完整域名路径，设置为自己的
+FULL_URL= "https://*******.***/" # 请修改此处
+EDIT_SUB=false # 启用自定路径，允许用户自定义
+EDIT_LEN=8 # 自定后缀最短长度，不允许小于此值
+AUTH_USE=false # 独立密码页面，更友好但不缓存
+
+# Log Config / 日志配置 =====================
+[observability.logs]
+enabled = false # 设置为true将会启用CF日志记录

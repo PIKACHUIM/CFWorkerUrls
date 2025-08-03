@@ -1,12 +1,7 @@
 import {Context, Hono} from 'hono'
 import {cors} from 'hono/cors'
-import {KVNamespace} from '@cloudflare/workers-types';
-import {serveStatic} from 'hono/cloudflare-workers'
 import {basicAuth} from 'hono/basic-auth'// @ts-ignore
 import {handleRequest} from './proxy'// @ts-ignore
-import manifest from '__STATIC_CONTENT_MANIFEST'
-// @ts-ignore
-import {update} from "hono/dist/types/jsx/dom/render";
 
 // 全局设置 ############################################################################################################
 type Bindings = {
@@ -17,14 +12,8 @@ type Bindings = {
     EDIT_SUB: boolean
     AUTH_USE: boolean
 }
-const app = new Hono<{ Bindings: Bindings }>();
-app.use(
-    '*',
-    cors({
-        // `c` is a `Context` object
-        origin: "*"
-    })
-)
+export const app = new Hono<{ Bindings: Bindings }>();
+app.use('*', cors({origin: "*"}))
 
 
 // 中间件：仅子域名 *.xxx.xxx 直接进行代理 =============================================================================
@@ -50,8 +39,6 @@ app.use('*', async (c, next) => {
     }
     await next() // 非子域名继续后续路由
 })
-
-app.use("*", serveStatic({manifest: manifest, root: "./"}));
 
 // 主页展示 ############################################################################################################
 app.get('/', async (c) => {
