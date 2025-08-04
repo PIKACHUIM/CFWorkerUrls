@@ -24,8 +24,8 @@ app.use('*', async (c, next) => {
         const origin_host: string = remote_host || c.req.header('host') || ''
         const server_host: string = c.env.PAGE_URL.replace(/\./g, '\\.'); // 转义正则中的点号
         const isSubdomain: boolean = new RegExp(`^.+\.${server_host}$`).test(origin_host);  // 动态构建正则表达式
-        console.log(remote_host, origin_host, server_host, isSubdomain);
-        return c.text(remote_host + origin_host + server_host + isSubdomain)
+        // console.log(remote_host, origin_host, server_host, isSubdomain);
+        // return c.text(remote_host + origin_host + server_host + isSubdomain)
         if (isSubdomain) {
             const sub_text: string = origin_host.split('.')[0]
             const sub_data: any = await reader(c, sub_text.toUpperCase());
