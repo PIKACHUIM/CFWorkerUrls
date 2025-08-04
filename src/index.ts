@@ -63,7 +63,7 @@ app.get('/', async (c) => {
 })
 
 app.get('/test/', async (c) => {
-    set(c)
+    // set(c)
     try {
         console.log(
             DATABASE
@@ -74,7 +74,7 @@ app.get('/test/', async (c) => {
     }
     try {
         console.log(
-            c.env.DATABASE,
+            // c.env.DATABASE,
             c.env.FULL_URL, c.env.Protocol,
             c.env.AUTH_USE, c.env.EDIT_LEN,
             c.env.EDIT_SUB, c.env.AUTH_USE,
