@@ -15,7 +15,7 @@ async function handleRequest(server_address = "::1", // 客户真实请求的地
         if (server_message == null) server_message = new Body(); // 如果不存在Headers或者Body，创建新的一个
         // if (server_methods == "POST")
         //     console.log(server_message);
-        // console.log(url_json,url_path);
+        console.log(url_json, url_path, server_headers, server_methods);
         // 创建一个新的请求以访问目标 URL =================================================================
         const remote_data = new Request(url_json, {
             headers: server_headers, method: server_methods, redirect: 'manual',
@@ -24,7 +24,7 @@ async function handleRequest(server_address = "::1", // 客户真实请求的地
 
         // 定义需要匹配的路径列表 =========================================================================
         const pathsToRedirect = ['/rest/', '/api/',
-            '/emby/Videos/', '/emby/videos/','/emby/Items/']; //必须添加末尾的/
+            '/emby/Videos/', '/emby/videos/', '/emby/Items/']; //必须添加末尾的/
 
         // 检查请求路径是否匹配列表中的任何一个路径
         if (pathsToRedirect.some(path => url_json.pathname.includes(path))) {

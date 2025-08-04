@@ -14,8 +14,22 @@ export type Bindings = {
     AUTH_USE: string
 }
 export const app = new Hono<{ Bindings: Bindings }>();
-app.use('*', cors({origin: "*"}))
+app.use('*', cors({origin: "*"}));
 
+app.use('/t/:proxy', async (c, next) => {
+    let proxy: string = <string>c.req.param('proxy');
+    let extra: string = new URL(c.req.url).pathname + new URL(c.req.url).search
+    const result: any = await handleRequest(
+        "https://" + proxy + "/" + extra, c.req.method, c.req.header,
+        await c.req.blob(), '', false, false
+    );
+    //需要重新封装response
+    return new Response(result.body, {
+        status: result.status,
+        statusText: result.statusText,
+        headers: Object.fromEntries(result.headers.entries())
+    });
+});
 
 // 中间件：仅子域名 *.xxx.xxx 直接进行代理 =============================================================================
 app.use('*', async (c, next) => {
