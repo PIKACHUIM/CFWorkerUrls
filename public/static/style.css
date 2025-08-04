@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'MapleMonoNL';
-    src: url('/static/maple.ttf');
+    src: url('https://res.oplist.org.cn/fonts/MapleMonoNL-CN-Regular.woff2');
 }
 
 * {
