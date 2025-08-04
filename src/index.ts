@@ -52,6 +52,7 @@ app.get('/', async (c) => {
 
 app.get('/test/', async (c) => {
     try {
+        c.env.DATABASE = DATABASE
         return c.text(
             c.env.DATABASE
         )
