@@ -5,12 +5,12 @@ import {handleRequest} from './proxy'// @ts-ignore
 
 // 全局设置 ############################################################################################################
 export type Bindings = {
-    DATABASE: KVNamespace,
+    DATABASE: KVNamespace | any,
     FULL_URL: string
     Protocol: string
     EDIT_LEN: string
-    EDIT_SUB: boolean
-    AUTH_USE: boolean
+    EDIT_SUB: string
+    AUTH_USE: string
     // EDGE_ONE: boolean
 }
 export const app = new Hono<{ Bindings: Bindings }>();
