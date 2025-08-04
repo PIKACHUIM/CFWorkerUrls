@@ -53,7 +53,7 @@ app.get('/', async (c) => {
 app.get('/test/', async (c) => {
     try {
         return c.text(
-            await c.env.DATABASE.list().stringify()
+             JSON.stringify(await c.env.DATABASE.list())
             // c.env.DATABASE.list()
         )
     } catch (e) {
