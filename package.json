@@ -4,8 +4,8 @@
     "dev-js": "tsx watch src/basic.ts",
     "build-js": "webpack --mode production",
     "deploy-js": "node dist/bundle.js",
-    "dev-cf": "wrangler dev --config wrangler.encrypt.jsonc",
-    "deploy-cf": "wrangler deploy --minify --config wrangler.encrypt.jsonc",
+    "dev-cf": "wrangler dev --config wrangler.encrypt.toml",
+    "deploy-cf": "wrangler deploy --minify --config wrangler.encrypt.toml",
     "dev-eo": "edgeone pages dev",
     "build-eo": "edgeone pages build",
     "deploy-eo": "edgeone pages deploy ./ -n cfworker-url -t ",
@@ -21,14 +21,14 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250109.0",
-    "@types/node": "^22.10.7",
     "@serverless-devs/s": "^3.1.10",
+    "@types/node": "^22.10.7",
     "esbuild": "^0.25.5",
+    "ts-loader": "^9.5.1",
     "tsx": "^4.7.1",
-    "wrangler": "^3.101.0",
     "typescript": "^5.8.3",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
-    "ts-loader": "^9.5.1"
+    "wrangler": "^4.27.0"
   }
 }

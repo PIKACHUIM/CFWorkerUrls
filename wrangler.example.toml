@@ -1,6 +1,6 @@
 # Basic Config / 基本设置 ===================
 name = "cfworker-urls"
-main = "src/index.ts"
+main = "src/cfapp.ts"
 compatibility_date = "2025-01-19"
 compatibility_flags = [ "nodejs_compat" ]
 # Account ID / 账号ID，请修改下方星号的内容！
@@ -17,7 +17,8 @@ id = "**************************************"
 # Website Config / 网站配置 =================
 [vars]
 # Domain URL / 网站完整域名路径，设置为自己的
-FULL_URL= "https://*******.***/" # 请修改此处
+FULL_URL= "********.***" # 网页的核心访问域名
+PAGE_URL= "********.***" # 网页的代理访问域名
 EDIT_SUB=false # 启用自定路径，允许用户自定义
 EDIT_LEN=8 # 自定后缀最短长度，不允许小于此值
 AUTH_USE=false # 独立密码页面，更友好但不缓存

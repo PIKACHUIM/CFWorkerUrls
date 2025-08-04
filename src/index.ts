@@ -7,6 +7,7 @@ import {handleRequest} from './proxy'// @ts-ignore
 export type Bindings = {
     DATABASE: KVNamespace | any,
     FULL_URL: string
+    PAGE_URL: string
     Protocol: string
     EDIT_LEN: string
     EDIT_SUB: string
@@ -19,9 +20,12 @@ app.use('*', cors({origin: "*"}))
 // 中间件：仅子域名 *.xxx.xxx 直接进行代理 =============================================================================
 app.use('*', async (c, next) => {
     try {
-        const origin_host: string = c.req.header('host') || ''
-        const server_host: string = c.env.FULL_URL.replace(/\./g, '\\.'); // 转义正则中的点号
+        const remote_host: string | null = c.req.header('Real-Host') || null
+        const origin_host: string = remote_host || c.req.header('host') || ''
+        const server_host: string = c.env.PAGE_URL.replace(/\./g, '\\.'); // 转义正则中的点号
         const isSubdomain: boolean = new RegExp(`^.+\.${server_host}$`).test(origin_host);  // 动态构建正则表达式
+        console.log(remote_host, origin_host, server_host, isSubdomain);
+        return c.text(remote_host + origin_host + server_host + isSubdomain)
         if (isSubdomain) {
             const sub_text: string = origin_host.split('.')[0]
             const sub_data: any = await reader(c, sub_text.toUpperCase());
@@ -118,7 +122,6 @@ async function reader(c: Context<{ Bindings: Bindings; }, "*">, suffix: string) 
     return JSON.parse(result);
 }
 
-
 // 链接跳转 ############################################################################################################
 app.get('/s/:suffix/*', async (c) => {
     try {
@@ -177,10 +180,10 @@ async function parser(c: Context, detail: any, suffix: string = "") {
         // console.log(c.env.Protocol + "://" + suffix + "." + c.env.FULL_URL + "/")
         if (typing == "iframe") return c.html('<iframe width="100%" height="100%" src=' + record + '></iframe>');
         if (typing == "direct") return c.redirect(record + extra, 302);
-        if (typing == "proxys") return c.redirect("https://proxyz.524228.xyz/" + record + extra, 302);
+        // if (typing == "proxys") return c.redirect("https://proxyz.524228.xyz/" + record + extra, 302);
         if (typing == "agents") return c.redirect("http://" + suffix + "." + c.env.FULL_URL + "/", 302);
         if (typing == "hidden") {// 返回响应给客户端
-            const result = await handleRequest(c.env.Protocol + "://" + c.env.FULL_URL + "/" + record + extra);
+            const result = await handleRequest(c.env.Protocol + "://" + c.env.PAGE_URL + "/" + record + extra);
             // 由于直接返回fetch得到的response会出现 Can't modify immutable headers错误，因此需要重新封装response
             return new Response(result.body, {
                 status: result.status,
@@ -385,17 +388,6 @@ function newUUID(length: number = 16): string {
     }
     return result;
 }
-
-
-// // 读取模板 ############################################################################################################
-// async function getTemp(module: string, url: string) {
-//     let full_url: string = url + "static/" + module
-//     const response = await fetch(full_url)
-//     if (!response.ok) {
-//         throw new Error('Failed to fetch template, url: ' + full_url + ",error:" + response.statusText);
-//     }
-//     return await response.text()
-// }
 
 // 更新时间 ############################################################################################################
 async function newTime(c: Context, suffix: any) {
