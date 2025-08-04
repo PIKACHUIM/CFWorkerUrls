@@ -11,6 +11,7 @@ export type Bindings = {
     EDIT_LEN: string
     EDIT_SUB: boolean
     AUTH_USE: boolean
+    EDGE_ONE: boolean
 }
 export const app = new Hono<{ Bindings: Bindings }>();
 app.use('*', cors({origin: "*"}))
@@ -49,17 +50,14 @@ app.use('*', cors({origin: "*"}))
 app.get('/', async (c) => {
     return redirect(c, "/index.html");
 })
-
-// 主页展示 ############################################################################################################
 app.get('/test/', async (c) => {
-    try {
-        console.log(DATABASE);
-    } catch (e) {
-        return c.text("error at: DATABASE");
-    }
+    console.log(
+        c.env.FULL_URL, c.env.Protocol,
+        c.env.AUTH_USE, c.env.EDIT_LEN,
+        c.env.EDIT_SUB, c.env.AUTH_USE,
+        c.env.EDGE_ONE);
     return c.text("ok");
 })
-
 // 生成页面 ############################################################################################################
 app.get('/a/', async (c) => {
     return redirect(c, "/index.html");
@@ -88,7 +86,7 @@ function redirect(c: Context, path: string) {
         return c.redirect(newUrl, 302);
     } catch (e) {
         console.log(e)
-        return c.text(e.stack || String(e), 500)
+        return c.text((e as Error).stack || String(e), 500)
     }
 
 }
@@ -98,10 +96,10 @@ app.use(
     '/b/:suffix/*',
     basicAuth({
         verifyUser: async (username, password, c) => {
+            if (username != "") console.log(username);
             let suffix: string = <string>c.req.param('suffix');
             let result: string = <string>await c.env.DATABASE.get(suffix);
             let detail = JSON.parse(result);
-            // console.log(detail);
             return (
                 password === detail["guests"]
             )
@@ -118,7 +116,7 @@ app.get('/b/:suffix/*', async (c) => {
         return parser(c, detail, suffix);
     } catch (e) {
         console.log(e)
-        return c.text(e.stack || String(e), 500)
+        return c.text((e as Error).stack || String(e), 500)
     }
 
 })
@@ -167,7 +165,7 @@ app.get('/s/:suffix/*', async (c) => {
         } else return c.notFound();
     } catch (e) {
         console.log(e)
-        return c.text(e.stack || String(e), 500)
+        return c.text((e as Error).stack || String(e), 500)
     }
 
 })
@@ -183,9 +181,9 @@ async function parser(c: Context, detail: any, suffix: string = "") {
         extra = removeGuestsParam(extra);
         // console.log(`Extra path: ${extra}`);
         // 处理跳转逻辑 =================================================================================================
-        // if (typing == "iframe") return c.html('<iframe width="100%" height="100%" src=' + record + '></iframe>');
+        // if (typing == "iframe") return c.html('<frameset rows="100%"> <frame src="' + record + extra + '"> </frameset>');
         // console.log(c.env.Protocol + "://" + suffix + "." + c.env.FULL_URL + "/")
-        if (typing == "iframe") return c.html('<frameset rows="100%"> <frame src="' + record + extra + '"> </frameset>');
+        if (typing == "iframe") return c.html('<iframe width="100%" height="100%" src=' + record + '></iframe>');
         if (typing == "direct") return c.redirect(record + extra, 302);
         if (typing == "proxys") return c.redirect("https://proxyz.524228.xyz/" + record + extra, 302);
         if (typing == "agents") return c.redirect("http://" + suffix + "." + c.env.FULL_URL + "/", 302);
@@ -201,7 +199,7 @@ async function parser(c: Context, detail: any, suffix: string = "") {
         return c.notFound()
     } catch (e) {
         console.log(e)
-        return c.text(e.stack || String(e), 500)
+        return c.text((e as Error).stack || String(e), 500)
     }
 
 }
@@ -314,7 +312,7 @@ app.get('/u/', async (c) => {
             302);
     } catch (e) {
         console.log(e)
-        return c.text(e.stack || String(e), 500)
+        return c.text((e as Error).stack || String(e), 500)
     }
 
 })
@@ -380,7 +378,7 @@ app.use('/p/', async (c) => {
         }))
     } catch (e) {
         console.log(e)
-        return c.text(e.stack || String(e), 500)
+        return c.text((e as Error).stack || String(e), 500)
     }
 
 })
@@ -397,15 +395,15 @@ function newUUID(length: number = 16): string {
 }
 
 
-// 读取模板 ############################################################################################################
-async function getTemp(module: string, url: string) {
-    let full_url: string = url + "static/" + module
-    const response = await fetch(full_url)
-    if (!response.ok) {
-        throw new Error('Failed to fetch template, url: ' + full_url + ",error:" + response.statusText);
-    }
-    return await response.text()
-}
+// // 读取模板 ############################################################################################################
+// async function getTemp(module: string, url: string) {
+//     let full_url: string = url + "static/" + module
+//     const response = await fetch(full_url)
+//     if (!response.ok) {
+//         throw new Error('Failed to fetch template, url: ' + full_url + ",error:" + response.statusText);
+//     }
+//     return await response.text()
+// }
 
 // 更新时间 ############################################################################################################
 async function newTime(c: Context, suffix: any) {
@@ -446,6 +444,7 @@ export default {
     async scheduled(controller: ScheduledController, env: Bindings, ctx: ExecutionContext) {
         console.log('Cron job processed');
         try {
+            console.log(controller, ctx)
             const keys = await env.DATABASE.list();
             for (const key of keys.keys) {
                 const value = await env.DATABASE.get(key.name);
