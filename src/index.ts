@@ -18,73 +18,53 @@ app.use('*', cors({origin: "*"}))
 
 
 // 中间件：仅子域名 *.xxx.xxx 直接进行代理 =============================================================================
-// app.use('*', async (c, next) => {
-//     try {
-//         const origin_host = c.req.header('host') || ''
-//         const server_host = c.env.FULL_URL.replace(/\./g, '\\.'); // 转义正则中的点号
-//         const isSubdomain = new RegExp(`^.+\.${server_host}$`).test(origin_host);  // 动态构建正则表达式
-//         if (isSubdomain) {
-//             const sub_text: string = origin_host.split('.')[0]
-//             const sub_data: any = await reader(c, sub_text.toUpperCase());
-//             // 返回响应给客户端
-//             let extra: string = new URL(c.req.url).pathname + new URL(c.req.url).search
-//             const result = await handleRequest(
-//                 sub_data["record"] + extra, c.req.method, c.req.header,
-//                 await c.req.blob(), sub_data["record"], false, false
-//             );
-//             //需要重新封装response
-//             return new Response(result.body, {
-//                 status: result.status,
-//                 statusText: result.statusText,
-//                 headers: Object.fromEntries(result.headers.entries())
-//             });
-//         }
-//         await next() // 非子域名继续后续路由
-//     } catch (e) {
-//         console.log(e)
-//         return c.text(e.stack || String(e), 500)
-//     }
-// })
-
-function set(c: Context) {
-
-    c.env[DATABASE] = DATABASE || c.env.DATABASE
-    // c.env[FULL_URL] = FULL_URL || c.env.FULL_URL
-    // c.env[Protocol] = Protocol || c.env.Protocol
-    // c.env[AUTH_USE] = AUTH_USE || c.env.AUTH_USE
-    // c.env[EDIT_LEN] = EDIT_LEN || c.env.EDIT_LEN
-    // c.env[EDIT_SUB] = EDIT_SUB || c.env.EDIT_SUB
-    // c.env[AUTH_USE] = AUTH_USE || c.env.AUTH_USE
-}
+app.use('*', async (c, next) => {
+    try {
+        const origin_host = c.req.header('host') || ''
+        const server_host = c.env.FULL_URL.replace(/\./g, '\\.'); // 转义正则中的点号
+        const isSubdomain = new RegExp(`^.+\.${server_host}$`).test(origin_host);  // 动态构建正则表达式
+        if (isSubdomain) {
+            const sub_text: string = origin_host.split('.')[0]
+            const sub_data: any = await reader(c, sub_text.toUpperCase());
+            // 返回响应给客户端
+            let extra: string = new URL(c.req.url).pathname + new URL(c.req.url).search
+            const result = await handleRequest(
+                sub_data["record"] + extra, c.req.method, c.req.header,
+                await c.req.blob(), sub_data["record"], false, false
+            );
+            //需要重新封装response
+            return new Response(result.body, {
+                status: result.status,
+                statusText: result.statusText,
+                headers: Object.fromEntries(result.headers.entries())
+            });
+        }
+        await next() // 非子域名继续后续路由
+    } catch (e) {
+        console.log(e)
+        return c.text(e.stack || String(e), 500)
+    }
+})
 
 // 主页展示 ############################################################################################################
 app.get('/', async (c) => {
     return redirect(c, "/index.html");
 })
 
-app.get('/test/', async (c) => {
-    // set(c)
-    try {
-        console.log(
-            DATABASE
-            // c.env.EDGE_ONE
-        );
-    } catch (err) {
-        return c.text("err env");
-    }
-    try {
-        console.log(
-            c.env.DATABASE,
-            c.env.FULL_URL, c.env.Protocol,
-            c.env.AUTH_USE, c.env.EDIT_LEN,
-            c.env.EDIT_SUB, c.env.AUTH_USE,
-            // c.env.EDGE_ONE
-        );
-    } catch (err) {
-        return c.text("err c.env");
-    }
-    return c.text("ok");
-})
+// app.get('/test/', async (c) => {
+//     try {
+//         console.log(
+//             c.env.DATABASE,
+//             c.env.FULL_URL, c.env.Protocol,
+//             c.env.AUTH_USE, c.env.EDIT_LEN,
+//             c.env.EDIT_SUB, c.env.AUTH_USE,
+//             // c.env.EDGE_ONE
+//         );
+//     } catch (err) {
+//         return c.text("err c.env");
+//     }
+//     return c.text("ok");
+// })
 
 // 生成页面 ############################################################################################################
 app.get('/a/', async (c) => {
