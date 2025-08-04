@@ -57,11 +57,6 @@ app.get('/test/', async (c) => {
     } catch (e) {
         return c.text("error at: DATABASE");
     }
-    try {
-        console.log(c.env.DATABASE);
-    } catch (e) {
-        return c.text("error at: c.env.DATABASE");
-    }
     return c.text("ok");
 })
 
