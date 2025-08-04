@@ -139,13 +139,6 @@ export function onRequest(context: {
     params: Record<string, string>;
     env: Record<string, any>;
 }): Response | Promise<Response> {
-    // const typedEnv: Bindings = {
-    //     DATABASE: context.env.DATABASE,
-    //     FULL_URL: context.env.FULL_URL ?? '',
-    //     Protocol: context.env.Protocol ?? '',
-    //     EDIT_LEN: context.env.EDIT_LEN ?? '',
-    //     EDIT_SUB: context.env.EDIT_SUB ?? false,
-    //     AUTH_USE: context.env.AUTH_USE ?? false,
-    // };
+    context.env.DATABASE = DATABASE
     return app.fetch(context.request, context.env);
 }
