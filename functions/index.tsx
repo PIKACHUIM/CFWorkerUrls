@@ -1,6 +1,5 @@
 import { app } from '../src'
 import { Context } from 'hono'
-import type { KVNamespace } from './env';
 
 const notFound = async (c: Context) => {
     return c.html(
