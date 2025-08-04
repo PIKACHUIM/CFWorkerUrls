@@ -50,6 +50,21 @@ app.get('/', async (c) => {
     return redirect(c, "/index.html");
 })
 
+// 主页展示 ############################################################################################################
+app.get('/test/', async (c) => {
+    try {
+        console.log(DATABASE);
+    } catch (e) {
+        return c.text("error at: DATABASE");
+    }
+    try {
+        console.log(c.env.DATABASE);
+    } catch (e) {
+        return c.text("error at: c.env.DATABASE");
+    }
+    return c.text("ok");
+})
+
 // 生成页面 ############################################################################################################
 app.get('/a/', async (c) => {
     return redirect(c, "/index.html");
