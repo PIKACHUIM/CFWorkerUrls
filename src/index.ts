@@ -4,7 +4,7 @@ import {basicAuth} from 'hono/basic-auth'// @ts-ignore
 import {handleRequest} from './proxy'// @ts-ignore
 
 // 全局设置 ############################################################################################################
-type Bindings = {
+export type Bindings = {
     DATABASE: KVNamespace,
     FULL_URL: string
     Protocol: string
