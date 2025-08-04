@@ -11,7 +11,6 @@ export type Bindings = {
     EDIT_LEN: string
     EDIT_SUB: string
     AUTH_USE: string
-    // EDGE_ONE: boolean
 }
 export const app = new Hono<{ Bindings: Bindings }>();
 app.use('*', cors({origin: "*"}))
@@ -51,20 +50,19 @@ app.get('/', async (c) => {
     return redirect(c, "/index.html");
 })
 
-// app.get('/test/', async (c) => {
-//     try {
-//         console.log(
-//             c.env.DATABASE,
-//             c.env.FULL_URL, c.env.Protocol,
-//             c.env.AUTH_USE, c.env.EDIT_LEN,
-//             c.env.EDIT_SUB, c.env.AUTH_USE,
-//             // c.env.EDGE_ONE
-//         );
-//     } catch (err) {
-//         return c.text("err c.env");
-//     }
-//     return c.text("ok");
-// })
+app.get('/test/', async (c) => {
+    try {
+        console.log(
+            c.env.DATABASE,
+            c.env.FULL_URL, c.env.Protocol,
+            c.env.AUTH_USE, c.env.EDIT_LEN,
+            c.env.EDIT_SUB, c.env.AUTH_USE,
+        );
+    } catch (err) {
+        return c.text("err c.env");
+    }
+    return c.text("ok");
+})
 
 // 生成页面 ############################################################################################################
 app.get('/a/', async (c) => {
