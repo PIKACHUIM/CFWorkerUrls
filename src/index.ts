@@ -63,7 +63,7 @@ app.get('/', async (c) => {
 })
 
 app.get('/test/', async (c) => {
-    // set(c)
+    set(c)
     try {
         console.log(
             DATABASE
@@ -72,17 +72,17 @@ app.get('/test/', async (c) => {
     } catch (err) {
         return c.text("err env");
     }
-    // try {
-    //     console.log(
-    //         c.env.DATABASE,
-    //         c.env.FULL_URL, c.env.Protocol,
-    //         c.env.AUTH_USE, c.env.EDIT_LEN,
-    //         c.env.EDIT_SUB, c.env.AUTH_USE,
-    //         // c.env.EDGE_ONE
-    //     );
-    // } catch (err) {
-    //     return c.text("err c.env");
-    // }
+    try {
+        console.log(
+            c.env.DATABASE,
+            c.env.FULL_URL, c.env.Protocol,
+            c.env.AUTH_USE, c.env.EDIT_LEN,
+            c.env.EDIT_SUB, c.env.AUTH_USE,
+            // c.env.EDGE_ONE
+        );
+    } catch (err) {
+        return c.text("err c.env");
+    }
     return c.text("ok");
 })
 
