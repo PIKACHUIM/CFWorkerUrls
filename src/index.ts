@@ -52,6 +52,15 @@ app.get('/', async (c) => {
 
 app.get('/test/', async (c) => {
     try {
+        return c.text(
+            c.env.DATABASE.toString()+"\n<br>"+
+            c.env.FULL_URL.toString()+"\n<br>"+
+            c.env.Protocol.toString()+"\n<br>"+
+            c.env.AUTH_USE.toString()+"\n<br>"+
+            c.env.EDIT_LEN.toString()+"\n<br>"+
+            c.env.EDIT_SUB.toString()+"\n<br>"+
+            c.env.AUTH_USE.toString()+"\n<br>"
+        )
         console.log(
             c.env.DATABASE,
             c.env.FULL_URL, c.env.Protocol,
