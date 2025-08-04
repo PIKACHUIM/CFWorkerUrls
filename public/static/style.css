@@ -1,3 +1,13 @@
+@font-face {
+    font-family: 'MapleMonoNL';
+    src: url('/static/maple.ttf');
+}
+
+* {
+    font-family: MapleMonoNL, sans-serif;
+}
+
+
 body {
     margin: 0;
     padding: 0;

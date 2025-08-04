@@ -39,22 +39,23 @@
             <label for="guests_pass" style="display: inline-block;">访问密码：</label>
             <div id="guests_pass" style="display: inline-block;"></div>
         </div>
-        <div class="form-group hint">认证密码时，用户名请留空，密码请输入上方显示的密码</div>
+        <div class="form-group hint" style="text-align: center;">认证密码时，如有用户名请留空，密码输入上方显示的密码</div>
         <div class="form-group">
-            <label for="spider_text">WebHook 内容：</label>
+            <label for="spider_text" style="text-align: center;">WebHook 内容：</label>
             <textarea id="spider_text" rows="7" cols="40" onclick="onText()"
-                      style="display: block; opacity: 0.5; border-radius: 10px;"></textarea>
+                      style="display: block; opacity: 0.5; border-radius: 10px;width: 100%"></textarea>
         </div>
-        <div class="form-group hint">Lucky-STUN穿透-编辑-WebHook-请求体，
+
+        <div class="form-group">
+            <label for="spider_path" style="display: inline-block;text-align: center;">WebHook 地址：</label>
+            <textarea id="spider_path" rows="1" cols="40" onclick="onPath()"
+                      style="display: block; opacity: 0.5; border-radius: 3px;width: 100%"></textarea>
+        </div>
+        <div class="form-group hint" style="text-align: center;">Lucky-STUN穿透-编辑-WebHook-请求体
             <a href="https://github.com/PIKACHUIM/CFWorkerUrls/blob/main/NATDOG.md">[🔗使用方法]</a><br/>
         </div>
-        <div class="form-group">
-            <label for="spider_path" style="display: inline-block;">WebHook 地址：</label>
-            <textarea id="spider_path" rows="1" cols="40" onclick="onPath()"
-                      style="display: block; opacity: 0.5; border-radius: 3px;"></textarea>
-        </div>
-        <div class="form-group hint" id="hostname_ip"></div>
-        <div class="form-group hint">上述信息仅显示一次，离开或关闭本页面后将无法再次查看</div>
+        <div class="form-group hint" style="text-align: center;" id="hostname_ip"></div>
+        <div class="form-group hint" style="text-align: center;">上述信息仅显示一次，离开或关闭本页面后将无法再次查看</div>
         <br/><br/>
         <button class="modify-btn" onclick="onPost()">修改链接</button>
         <br/><br/>
@@ -92,7 +93,7 @@
                 '\n}';
 
             let hostname = window.location.hostname;
-            hostname_ip.textContent = "设置：请求类型：POST，检测成功字符串：Successfully"
+            hostname_ip.textContent = "Webhook请求类型：POST，检测成功字符串：Successfully"
             spider_path.textContent = "https://" + hostname + "/p/"
         }
         if (urlParams.has('tokens')) {
