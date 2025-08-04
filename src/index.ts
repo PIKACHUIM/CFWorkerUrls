@@ -56,8 +56,8 @@ app.get('/test/', async (c) => {
             await DATABASE.list()
             // c.env.DATABASE.list()
         )
-    } catch (err) {
-        return c.text("err c.env");
+    } catch (e) {
+        return c.text(e.stack || String(e), 500)
     }
     return c.text("ok");
 })
